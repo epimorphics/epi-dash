@@ -35,6 +35,7 @@ export default {
       msg: 'Welcome to Your Vue.js App',
       displayed: [],
       projects: [],
+      users: [],
       metricText: {
         bugs: 'Active Bugs',
         critical: 'Critical Issues',
@@ -67,6 +68,10 @@ export default {
         this.projects = projects
         this.displayed = projects
         console.log(this.projects)
+      })
+    request('http://localhost:4000/json/users')
+      .then((response) => {
+        this.users = response.body.users
       })
   },
   methods: {
