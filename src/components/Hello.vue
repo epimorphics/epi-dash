@@ -1,12 +1,16 @@
 <template>
   <div class="container">
-    <div>
+    <br>
+    <div class="filters">
+      <span> Filter by: </span>
       <button v-on:click="all">All Projects</button>
       <button v-on:click="cb">CodebaseHQ</button>
       <button v-on:click="git">Github</button>
       <button v-on:click="test">Tests</button>
     </div>
-    <div>
+    <br>
+    <div class="filters">
+      <span> Sort by: </span>
       <button v-on:click="sort('critical')">Critical Issues</button>
       <button v-on:click="sort('bugs')">Bugs</button>
       <button v-on:click="sort('issues')">Issues</button>
@@ -93,6 +97,10 @@ export default {
 .container {
   width: 75%;
   margin: 0 auto;
+}
+
+.filters {
+  text-align: center;
 }
 
 h1, h2 {

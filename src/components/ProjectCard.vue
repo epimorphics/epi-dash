@@ -1,7 +1,8 @@
 <template>
   <div>
     <div class="header">
-      <img class="source" v-bind:class="project.source"></img> {{ project.name }}
+      <img class="source" v-bind:class="project.source"></img>
+      <span class="projectName">{{ project.name }}</span>
       <span v-for="avatar in project.avatars">
         <img class="avatar" v-bind:src="avatar"></img>
       </span>
@@ -37,6 +38,7 @@
 
   .body {
     display: flex;
+    height: 130px;
   }
 
   .bodyleft {
@@ -86,5 +88,10 @@
     width: 50px;
     height: 50px;
     float: left;
+  }
+
+  .projectName {
+    font-size: 40px;
+    margin: 10px;
   }
 </style>
