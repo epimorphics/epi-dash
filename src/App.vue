@@ -1,10 +1,12 @@
 <template>
   <div id="app">
     <div id="logo">
-      <img src="./assets/epimorphics-logo.png">
+      <a href="/"><img src="./assets/epimorphics-logo.png"></a>
     </div>
     <br>
+    <div class="container">
     <router-view></router-view>
+    </div>
   </div>
 </template>
 
@@ -28,5 +30,10 @@ export default {
 
 #logo img {
   width: 350px;
+}
+
+.container {
+  width: 75%;
+  margin: 0 auto;
 }
 </style>

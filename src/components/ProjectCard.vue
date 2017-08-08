@@ -2,10 +2,10 @@
   <div>
     <div class="header">
       <img class="source" v-bind:class="project.source"></img>
-      <span class="projectName">{{ project.name }}</span>
-      <span v-for="avatar in project.avatars">
-        <img class="avatar" v-bind:src="avatar"></img>
-      </span>
+      <div class="projectName">{{ project.name }}</div>
+      <div class="avatarbox">
+        <img class="avatar" v-for="avatar in project.avatars" v-bind:src="avatar"></img>
+      </div>
     </div>
     <div class="body">
       <div class="bodyleft">
@@ -29,11 +29,12 @@
   }
 </script>
 
-<style>
+<style scoped>
 
   .header {
-    height: 50px;
     background-color: #dddddd;
+    display: flex;
+    flex-direction: row;
   }
 
   .body {
@@ -73,6 +74,7 @@
   .avatar {
     width: 50px;
     float: right;
+    align-items: flex-end;
   }
 
   .cb {
@@ -93,5 +95,9 @@
   .projectName {
     font-size: 40px;
     margin: 10px;
+  }
+
+  .avatarBox {
+    align-items: flex-end;
   }
 </style>
