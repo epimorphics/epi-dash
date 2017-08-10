@@ -3,8 +3,6 @@
     <div class="header" v-on:click="openRepo">
       <div class="projectName">{{ project.name}}</div>
     </div>
-    <div class="bottom" v-bind:class="project.test">
-    </div>
   </div>
 </template>
 

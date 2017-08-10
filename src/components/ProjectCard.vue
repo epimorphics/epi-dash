@@ -17,7 +17,7 @@
         </ul>
       </div>
     </div>
-    <div class="bottom" v-bind:class="project.test">
+    <div class="bottom" v-if="!small" v-bind:class="project.test">
     </div>
   </div>
 </template>

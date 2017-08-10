@@ -234,12 +234,15 @@ export default {
   height: 50px;
   width: 100%;
   background-color: #dddddd;
-  margin-bottom: 20px;
 }
 
 #settings {
   float: right;
   height: 50px;
+}
+
+#allSources > div{
+  padding: 10px;
 }
 
 .metrics {
