@@ -1,23 +1,19 @@
 <template>
   <div>
     <div class="header" v-on:click="openRepo">
-      <img class="source" v-bind:class="project.source"></img>
-      <div class="projectName">{{ project.name }}</div>
-      <div v-if="!small" class="avatarbox">
-        <img class="avatar" v-for="avatar in project.avatars" v-bind:src="avatar"></img>
-      </div>
+      <div class="projectName">Metrics</div>
     </div>
     <div v-if="!open" class="body">
       <div class="bodyleft">
-        {{ project.description }}
-      </div>
-      <div class="bodyright">
-        <ul v-for="key in Object.keys(project.metrics)">
-          <li>{{key}} {{ project.metrics[key] }}</li>
+        <ul v-for="key in Object.keys(repometrics)">
+          <li>{{key}} {{ repometrics[key] }}</li>
         </ul>
       </div>
-    </div>
-    <div class="bottom" v-bind:class="project.test">
+      <div class="bodyright">
+        <ul v-for="key in Object.keys(trellometrics)">
+          <li>{{key}} {{ trellometrics[key] }}</li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
@@ -27,11 +23,11 @@
     name: 'project',
     data () {
       return {
-        closable: this.small,
+        closable: true,
         open: this.small
       }
     },
-    props: ['project', 'metricText', 'small'],
+    props: ['trellometrics', 'repometrics', 'small'],
     methods: {
       openRepo () {
         if (this.closable) {
