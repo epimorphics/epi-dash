@@ -14,20 +14,11 @@
       </div>
       <div class="sectionContent">
         <ul v-for="key in Object.keys(project.metrics)">
-          <li>{{ project.metrics[key] }} {{ metricText[key] }}</li>
+          <li>{{ project.metrics[key] }} {{ key }}</li>
         </ul>
       </div>
     </div>
-    <div class="section">
-      <div class="header">
-        Contributors
-      </div>
-      <div class="sectionContent" v-for="avatar in project.avatars">
-        <div>
-          <img class="avatar" v-bind:src="avatar"></img>
-        </div>
-      </div>
-    </div>
+    <contributorcard v-bind:contributors="project.avatars"></contributorcard>
     <div class="section">
       <div class="header">
         Description
@@ -39,6 +30,7 @@
 
 <script>
 import request from 'superagent'
+import ContributorCard from './ContributorCard'
 export default {
   data () {
     return {
@@ -49,6 +41,9 @@ export default {
         issues: 'Issues'
       }
     }
+  },
+  components: {
+    'contributorcard': ContributorCard
   },
   name: 'projectPage',
   mounted () {
