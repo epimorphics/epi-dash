@@ -5,6 +5,10 @@
     </div>
     <br>
     <div class="container">
+     <a href="/">Projects</a> <a href="/#/repos">Repos</a> <a href="/#/trello">Trello Boards</a>
+     <br>
+    </div>
+    <div class="container">
     <router-view></router-view>
     </div>
   </div>

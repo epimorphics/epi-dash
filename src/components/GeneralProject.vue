@@ -11,8 +11,8 @@
       <div v-for="repo in display.repo">
         <projectcard v-bind:project="repo" v-bind:small="true">{{repo}}</projectcard>
       </div>
-      <div v-for="repo in display.trello">
-        <projectcard v-bind:project="repo" v-bind:small="true"></projectcard>
+      <div v-for="trello in display.trello">
+        <projectcard v-on:unfilter="unfilter" v-bind:project="trello" v-bind:small="true" v-bind:filtered="true"></projectcard>
       </div>
     </div>
 
@@ -20,6 +20,17 @@
       <br></br>
       <div id="projectName">
         Project Name <input type="text" v-model="sources.name"></input>
+      </div>
+      <br></br>
+
+      <div v-for="trello in display.trello">
+        {{ trello.name }}
+        <div>
+          <select type="dropdown">
+            <option value="merge">Merge</option>
+            <option value="show">Show</option>
+          </select>
+        </div>
       </div>
       <br></br>
       <div id="sources">
@@ -46,10 +57,10 @@
 
 <script>
 import request from 'superagent'
-import ProjectCard from './ProjectCard'
 import TrelloCard from './TrelloCard'
 import ContributorCard from './ContributorCard'
 import MetricCard from './MetricCard'
+import ProjectCard from './GraphCard'
 
 export default {
   name: 'general',
@@ -75,7 +86,8 @@ export default {
       displayedRepos: [],
       trellometrics: {},
       repometrics: {},
-      metrics: []
+      metrics: [],
+      users: []
     }
   },
   watch: {
@@ -89,21 +101,28 @@ export default {
     }
   },
   methods: {
+    unfilter (msg) {
+      if (this.trelloTransforms.hasOwnProperty(msg)) {
+        delete this.trelloTransforms[msg]
+      }
+      this.setMetrics()
+      this.updateTrello()
+    },
     settings () {
       this.settingView = !this.settingView
     },
     updateTrello () {
-      const trello = this.trello.reduce((all, elem) => {
-        if (this.displayedTrello.includes(elem.shortLink)) {
-          if (this.trelloTransforms.hasOwnProperty(elem.shortLink)) {
-            all.push(this.applyTransform(elem, this.trelloTransforms[elem.shortLink].transform))
-          } else {
-            all.push(elem)
-          }
-        }
-        return all
-      }, [])
-      this.display.trello = trello
+      const repoPromises = this.displayedTrello.map((elem) =>
+        request(elem.url)
+          .then((response) => {
+            return this.applyTransform(response.body, elem.transform)
+          })
+      )
+      Promise.all(repoPromises)
+        .then((responses) => {
+          this.display.trello = responses
+          this.setMetrics()
+        })
     },
     applyTransform (object, transform) {
       const newObject = object
@@ -134,15 +153,17 @@ export default {
       return newObject
     },
     updateRepos () {
-      this.display.repo = this.repos.filter((elem) => {
-        return this.displayedRepos.includes(elem.name)
-      })
-      this.contributors = this.display.repo.reduce((all, repo) => {
-        const avatars = repo.avatars.filter((avatar) => {
-          return !all.includes(avatar)
+      const repoPromises = this.displayedRepos.map((elem) =>
+        request(elem.url)
+          .then((response) => {
+            return this.applyTransform(response.body, elem.transform)
+          })
+      )
+      Promise.all(repoPromises)
+        .then((responses) => {
+          this.display.repo = responses
+          this.setMetrics()
         })
-        return Array.concat(all, avatars)
-      }, [])
     },
     setSources () {
       this.updateTrello()
@@ -191,16 +212,13 @@ export default {
         .then((response) => {
           this.sources = response.body
           this.sources.cb.map((repo) => {
-            this.displayedRepos.push(repo.name)
+            this.displayedRepos.push(repo)
           })
           this.sources.git.map((repo) => {
-            this.displayedRepos.push(repo.name)
+            this.displayedRepos.push(repo)
           })
           this.sources.trello.map((repo) => {
-            Object.keys(repo).map((key) => {
-              this.displayedTrello.push(key)
-              this.trelloTransforms = Object.assign(this.trelloTransforms, repo)
-            })
+            this.displayedTrello.push(repo)
           })
           this.setSources()
         })

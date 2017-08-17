@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import RepoHandler from '@/components/RepoHandler'
 import ProjectHandler from '@/components/ProjectHandler'
 import ProjectPage from '@/components/ProjectPage'
 import TrelloHandler from '@/components/TrelloHandler'
@@ -13,6 +14,11 @@ export default new Router({
       path: '/',
       name: 'Projects',
       component: ProjectHandler
+    },
+    {
+      path: '/repos',
+      name: 'Repositories',
+      component: RepoHandler
     },
     {
       path: '/repo',

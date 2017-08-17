@@ -3,8 +3,9 @@
     <div class="header" v-on:click="openRepo">
       <img class="source" v-bind:class="project.source"></img>
       <div class="projectName">{{ project.name }}</div>
+      <div v-if="filtered" v-on:click="emitUnfilter">X</div>
       <div v-if="!small" class="avatarbox">
-        <img class="avatar" v-for="avatar in project.avatars" v-bind:src="avatar"></img>
+        <img class="avatar" v-for="login in project.avatars" v-bind:title="login" v-bind:src="getAvatar(login)"></img>
       </div>
     </div>
     <div v-if="!open" class="body">
@@ -31,11 +32,31 @@
         open: this.small
       }
     },
-    props: ['project', 'metricText', 'small'],
+    props: ['project', 'metricText', 'small', 'filtered', 'users'],
     methods: {
       openRepo () {
         if (this.closable) {
           this.open = !this.open
+        }
+      },
+      emitUnfilter () {
+        this.$emit('unfilter', this.project.shortLink)
+      },
+      getAvatar (login) {
+        const user = this.users.find((user) => {
+          if (user.login === login) {
+            return true
+          }
+          return false
+        })
+        if (user) {
+          if (user.hasOwnProperty('avatar_url')) {
+            return user.avatar_url
+          } else {
+            return ''
+          }
+        } else {
+          return ''
         }
       }
     }

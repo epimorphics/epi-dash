@@ -1,30 +1,20 @@
 <template>
   <div class="TrelloHolder">
     <div v-for="board in boards">
-      <div> {{ board.name }}</div>
-      <div v-if="Object.keys(board.stats).length > 0">
-        STATS
-        <div v-for="key in Object.keys(board.stats)">
-          {{ key }}  {{board.stats[key]}}
-        </div>
-      </div>
-      <br>
-      <div v-if="Object.keys(board.deadlines).length > 0">
-        DEADLINES
-        <div v-for="key in Object.keys(board.deadlines)">
-          {{key}} {{board.deadlines[key]}}
-        </div>
-      </div>
-      <br>
+      <projectcard v-bind:project="board"></projectcard>
     </div>
   </div>
 </template>
 
 <script>
 import request from 'superagent'
+import projectCard from './ProjectCard'
 
 export default {
   name: 'projectHandler',
+  components: {
+    'projectcard': projectCard
+  },
   data () {
     return {
       displayed: [],

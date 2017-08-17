@@ -1,5 +1,6 @@
 <template>
   <div>
+    {{ project }}
     <div class="section">
       <div>
         <div class="header">{{ project.displayName}}</div>

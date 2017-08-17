@@ -3,6 +3,8 @@
     <div class="header" v-on:click="openRepo">
       <div class="projectName">{{ project.name}}</div>
     </div>
+    <div class="body">
+    </div>
   </div>
 </template>
 

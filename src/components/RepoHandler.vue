@@ -1,16 +1,30 @@
 <template>
   <div class="projectHolder">
     <div class="filters">
+      <span> Filter by: </span>
+      <button v-on:click="all">All Projects</button>
+      <button v-on:click="cb">CodebaseHQ</button>
+      <button v-on:click="git">Github</button>
+      <button v-on:click="test">Tests</button>
+    </div>
+    <br>
+    <div class="filters">
+      <span> Sort by: </span>
+      <button v-on:click="sort('Critical')">Critical Issues</button>
+      <button v-on:click="sort('Bugs')">Bugs</button>
+      <button v-on:click="sort('Issues')">Issues</button>
+    </div>
+    <div class="filters">
       <a href="/#/new/project">new project</a>
     </div>
     <ul class="hello" v-for="project in displayed">
-      <projectcard v-on:click.native="focus(project)" v-bind:project="project" v-bind:trello="trello" v-bind:repos="repos" v-bind:users="users"></projectcard>
+      <projectcard v-on:click.native="focus(project)" v-bind:project="project" v-bind:users="users"></projectcard>
     </ul>
   </div>
 </template>
 
 <script>
-import projectcard from './GeneralProjectCard'
+import projectcard from './ProjectCard'
 import request from 'superagent'
 
 export default {
@@ -23,8 +37,6 @@ export default {
     return {
       displayed: [],
       projects: [],
-      trello: [],
-      repo: [],
       users: [],
       metricText: {
         bugs: 'Active Bugs',
@@ -57,18 +69,30 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json/trello')
+    request('http://localhost:4000/json')
       .then((response) => {
-        this.trello = response.body
+        const projects = response.body.projects
+        return request('http://localhost:4000/json/tests')
+          .then((tests) => {
+            return projects.map(project => {
+              const test = tests.body.tests.find((elem) => elem.name === project.name)
+              if (test === undefined) {
+                project.test = 'notests'
+              } else {
+                if (test.success === true) {
+                  project.test = 'testpass'
+                } else {
+                  project.test = 'testfail'
+                }
+              }
+              return project
+            })
+          })
       })
-    request('http://localhost:4000/json/')
-      .then((response) => {
-        this.repos = response.body.projects
-      })
-    request('http://localhost:4000/json/projects')
-      .then((response) => {
-        this.projects = response.body
-        this.displayed = response.body
+      .then((projects) => {
+        this.projects = projects
+        this.displayed = projects
+        console.log(this.projects)
       })
     request('http://localhost:4000/json/users')
       .then((response) => {
