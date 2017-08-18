@@ -3,14 +3,14 @@
     <div class="filters">
       <a href="/#/new/project">new project</a>
     </div>
-    <ul class="hello" v-for="project in displayed">
-      <projectcard v-on:click.native="focus(project)" v-bind:project="project" v-bind:trello="trello" v-bind:repos="repos" v-bind:users="users"></projectcard>
+    <ul class="hello" v-for="project in projects">
+      <projectcard v-bind:project="project"></projectcard>
     </ul>
   </div>
 </template>
 
 <script>
-import projectcard from './GeneralProjectCard'
+import projectcard from './ProjectCard'
 import request from 'superagent'
 
 export default {
@@ -57,22 +57,34 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json/trello')
-      .then((response) => {
-        this.trello = response.body
-      })
-    request('http://localhost:4000/json/')
-      .then((response) => {
-        this.repos = response.body.projects
-      })
     request('http://localhost:4000/json/projects')
       .then((response) => {
-        this.projects = response.body
-        this.displayed = response.body
-      })
-    request('http://localhost:4000/json/users')
-      .then((response) => {
-        this.users = response.body.users
+        this.displayed = response.body.map((project) => {
+          const newproject = {name: project.name, metrics: {}, displayName: project.name, source: 'cb'}
+          const repoPromises = []
+          project.cb.map((repo) => {
+            repoPromises.push(request(repo.url).then((response) => response.body))
+          })
+          project.git.map((repo) => {
+            repoPromises.push(request(repo.url).then((response) => response.body))
+          })
+          project.trello.map((repo) => {
+            repoPromises.push(request(repo.url).then((response) => response.body))
+          })
+          Promise.all(repoPromises)
+            .then((allrepos) => {
+              allrepos.map((repo) => {
+                Object.keys(repo.metrics).map((key) => {
+                  if (newproject.metrics.hasOwnProperty(key)) {
+                    newproject.metrics[key] += repo.metrics[key]
+                  } else {
+                    newproject.metrics[key] = repo.metrics[key]
+                  }
+                })
+              })
+              this.projects.push(newproject)
+            })
+        })
       })
   }
 }
