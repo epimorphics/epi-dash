@@ -74,6 +74,7 @@ export default {
           Promise.all(repoPromises)
             .then((allrepos) => {
               allrepos.map((repo) => {
+                console.log(repo)
                 Object.keys(repo.metrics).map((key) => {
                   if (newproject.metrics.hasOwnProperty(key)) {
                     newproject.metrics[key] += repo.metrics[key]

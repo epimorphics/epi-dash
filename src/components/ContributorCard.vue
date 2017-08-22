@@ -1,7 +1,7 @@
 <template>
   <div class="header">
     <span class="projectName">Contributors</span>
-    <img class="avatar" v-for="login in contributors" v-bind:src="getAvatar(login)"></img>
+    <img class="avatar" v-for="login in contributors" v-bind:src="login"></img>
   </div>
 </template>
 
@@ -21,25 +21,6 @@ export default {
       .then((response) => {
         this.users = response.body.users
       })
-  },
-  methods: {
-    getAvatar (login) {
-      const user = this.users.find((user) => {
-        if (user.login === login) {
-          return true
-        }
-        return false
-      })
-      if (user) {
-        if (user.hasOwnProperty('avatar_url')) {
-          return user.avatar_url
-        } else {
-          return ''
-        }
-      } else {
-        return ''
-      }
-    }
   },
   props: ['contributors']
 }

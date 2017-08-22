@@ -5,7 +5,7 @@
       <div class="projectName">{{ project.name }}</div>
       <div v-if="filtered" v-on:click="emitUnfilter">X</div>
       <div v-if="!small" class="avatarbox">
-        <img class="avatar" v-for="login in project.avatars" v-bind:title="login" v-bind:src="getAvatar(login)"></img>
+        <img class="avatar" v-for="login in project.avatars" v-bind:title="login" v-bind:src="login"></img>
       </div>
     </div>
     <div v-if="!open" class="body">
@@ -41,23 +41,6 @@
       },
       emitUnfilter () {
         this.$emit('unfilter', this.project.shortLink)
-      },
-      getAvatar (login) {
-        const user = this.users.find((user) => {
-          if (user.login === login) {
-            return true
-          }
-          return false
-        })
-        if (user) {
-          if (user.hasOwnProperty('avatar_url')) {
-            return user.avatar_url
-          } else {
-            return ''
-          }
-        } else {
-          return ''
-        }
       }
     }
   }

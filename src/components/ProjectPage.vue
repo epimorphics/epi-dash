@@ -1,6 +1,5 @@
 <template>
   <div>
-    {{ project }}
     <div class="section">
       <div>
         <div class="header">{{ project.displayName}}</div>
@@ -24,7 +23,7 @@
       <div class="header">
         Description
       </div>
-      <div class="sectionContent">{{ project.description }} </div>
+      <div class="sectionContent" v-if="project.description != null">{{ project.description }} </div>
     </div>
   </div>
 </template>
@@ -35,12 +34,7 @@ import ContributorCard from './ContributorCard'
 export default {
   data () {
     return {
-      project: {},
-      metricText: {
-        bugs: 'Active Bugs',
-        critical: 'Critical Issues',
-        issues: 'Issues'
-      }
+      project: { metrics: {} }
     }
   },
   components: {
@@ -50,8 +44,20 @@ export default {
   mounted () {
     request(`http://localhost:4000/json/project/${this.$route.query.name}`)
       .then((response) => {
-        const project = response.body
-        request('http://localhost:4000/json/tests')
+        this.project = response.body
+        if (this.project.description == null) {
+          this.project.description = ''
+        }
+        if (this.project.test == null) {
+          this.project.test = 'notests'
+        } else {
+          if (this.project.test) {
+            this.project.test = 'testpass'
+          } else {
+            this.project.test = 'testfail'
+          }
+        }
+        /* request('http://localhost:4000/json/tests')
           .then((tests) => {
             const test = tests.body.tests.find((elem) => elem.name === project.name)
             if (test === undefined) {
@@ -64,7 +70,7 @@ export default {
               }
             }
             this.project = project
-          })
+          }) */
       })
   }
 }
