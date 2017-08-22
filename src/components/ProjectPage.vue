@@ -57,20 +57,6 @@ export default {
             this.project.test = 'testfail'
           }
         }
-        /* request('http://localhost:4000/json/tests')
-          .then((tests) => {
-            const test = tests.body.tests.find((elem) => elem.name === project.name)
-            if (test === undefined) {
-              project.test = 'notests'
-            } else {
-              if (test.success === true) {
-                project.test = 'testpass'
-              } else {
-                project.test = 'testfail'
-              }
-            }
-            this.project = project
-          }) */
       })
   }
 }

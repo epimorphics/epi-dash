@@ -32,7 +32,7 @@
         open: this.small
       }
     },
-    props: ['project', 'metricText', 'small', 'filtered', 'users'],
+    props: ['project', 'metricText', 'small', 'filtered'],
     methods: {
       openRepo () {
         if (this.closable) {

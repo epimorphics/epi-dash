@@ -18,7 +18,7 @@
       <a href="/#/new/project">new project</a>
     </div>
     <ul class="hello" v-for="project in displayed">
-      <projectcard v-on:click.native="focus(project)" v-bind:project="project" v-bind:users="users"></projectcard>
+      <projectcard v-on:click.native="focus(project)" v-bind:project="project"></projectcard>
     </ul>
   </div>
 </template>
@@ -37,7 +37,6 @@ export default {
     return {
       displayed: [],
       projects: [],
-      users: [],
       metricText: {
         bugs: 'Active Bugs',
         critical: 'Critical Issues',
@@ -69,34 +68,25 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json')
+    request('http://localhost:4000/json/repos')
       .then((response) => {
         const projects = response.body.projects
-        return request('http://localhost:4000/json/tests')
-          .then((tests) => {
-            return projects.map(project => {
-              const test = tests.body.tests.find((elem) => elem.name === project.name)
-              if (test === undefined) {
-                project.test = 'notests'
-              } else {
-                if (test.success === true) {
-                  project.test = 'testpass'
-                } else {
-                  project.test = 'testfail'
-                }
-              }
-              return project
-            })
-          })
+        return projects.map(project => {
+          if (project.test == null) {
+            project.test = 'notests'
+          } else {
+            if (project.test) {
+              project.test = 'testpass'
+            } else {
+              project.test = 'testfail'
+            }
+          }
+          return project
+        })
       })
       .then((projects) => {
         this.projects = projects
         this.displayed = projects
-        console.log(this.projects)
-      })
-    request('http://localhost:4000/json/users')
-      .then((response) => {
-        this.users = response.body.users
       })
   }
 }

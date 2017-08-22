@@ -25,7 +25,7 @@ export default {
     'contributorcard': ContributorCard,
     'metriccard': MetricCard
   },
-  props: ['trello', 'users', 'repos', 'project'],
+  props: ['trello', 'repos', 'project'],
   data () {
     return {
       sources: { name: 'New Project' },

@@ -6,21 +6,13 @@
 </template>
 
 <script>
-import request from 'superagent'
 export default {
   name: 'contributorcard',
   data () {
     return {
       closable: this.small,
-      open: this.small,
-      users: []
+      open: this.small
     }
-  },
-  mounted () {
-    request('http://localhost:4000/json/users')
-      .then((response) => {
-        this.users = response.body.users
-      })
   },
   props: ['contributors']
 }

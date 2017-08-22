@@ -86,8 +86,7 @@ export default {
       displayedRepos: [],
       trellometrics: {},
       repometrics: {},
-      metrics: [],
-      users: []
+      metrics: []
     }
   },
   watch: {
@@ -201,7 +200,7 @@ export default {
         this.trello = response.body
         this.setSources()
       })
-    request('http://localhost:4000/json/')
+    request('http://localhost:4000/json/repos')
       .then((response) => {
         this.repos = response.body.projects
         this.setSources()
