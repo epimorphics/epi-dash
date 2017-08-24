@@ -1,5 +1,6 @@
 <template>
   <div>
+  <linetest v-bind:name="this.$route.query.name"></linetest> 
     <div class="section">
       <div>
         <div class="header">{{ project.displayName}}</div>
@@ -31,14 +32,17 @@
 <script>
 import request from 'superagent'
 import ContributorCard from './ContributorCard'
+import linetest from './LineChart'
 export default {
   data () {
     return {
-      project: { metrics: {} }
+      project: { metrics: {} },
+      datasets: []
     }
   },
   components: {
-    'contributorcard': ContributorCard
+    'contributorcard': ContributorCard,
+    'linetest': linetest
   },
   name: 'projectPage',
   mounted () {
