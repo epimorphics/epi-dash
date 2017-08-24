@@ -40,7 +40,7 @@ export default {
       this.displayed = this.projects.filter((project) => project.test !== 'notests')
     },
     focus (project) {
-      window.location.href = '#/repo?name=' + project.shortlink
+      window.location.href = '#/repo?name=' + project.name
     }
   },
   mounted () {

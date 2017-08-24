@@ -2,7 +2,7 @@
   <div>
     <div class="header" v-on:click="openRepo">
       <img class="source" v-bind:class="project.source"></img>
-      <div class="projectName">{{ project.name }}</div>
+      <div class="projectName">{{ project.displayName}}</div>
       <div v-if="filtered" v-on:click="emitUnfilter">X</div>
       <div v-if="!small" class="avatarbox">
         <img class="avatar" v-for="login in project.avatars" v-bind:title="login" v-bind:src="login"></img>

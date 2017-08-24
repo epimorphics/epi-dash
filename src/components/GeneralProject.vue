@@ -22,23 +22,23 @@
         Project Name <input type="text" v-model="sources.name"></input>
       </div>
       <br></br>
-
+<!--
       <div v-for="trello in display.trello">
-        {{ trello.name }}
+        {{ trello.displayName }}
         <div>
           <select type="dropdown">
             <option value="merge">Merge</option>
             <option value="show">Show</option>
           </select>
         </div>
-      </div>
+      </div> -->
       <br></br>
       <div id="sources">
         <div id="repos">
           ADD REPOS 
           <div>
             <div v-for="repo in repos">
-              <input type="checkbox" v-bind:id="repo.name" v-bind:value="repo.name" v-model="displayedRepos">{{ repo.name }}</input>
+              <input type="checkbox" v-bind:id="repo.name" v-bind:value="{url: repo.url, transform: {}}" v-model="displayedRepos">{{ repo.displayName }}</input>
             </div>
           </div>
         </div>
@@ -46,7 +46,7 @@
           ADD BOARDS 
           <div>
             <div v-for="trello in trello">
-              <input type="checkbox" v-bind:id="trello.name" v-bind:value="trello.shortLink" v-model="displayedTrello">{{ trello.name }}</input>
+              <input type="checkbox" v-bind:id="trello.name" v-bind:value="{url: trello.url, transform: {} }" v-model="displayedTrello">{{ trello.displayName }}</input>
             </div>
           </div>
         </div>
@@ -60,7 +60,7 @@ import request from 'superagent'
 import TrelloCard from './TrelloCard'
 import ContributorCard from './ContributorCard'
 import MetricCard from './MetricCard'
-import ProjectCard from './GraphCard'
+import ProjectCard from './ProjectCard'
 
 export default {
   name: 'general',
