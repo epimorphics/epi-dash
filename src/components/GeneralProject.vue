@@ -5,6 +5,8 @@
       <button id="settings" v-on:click="settings">Settings</button>
     </div>
 
+    <graphreact></graphreact>
+
     <div id="allSources" v-if="!settingView">
       <contributorcard v-bind:contributors="contributors"></contributorcard>
       <metriccard v-bind:repometrics="repometrics" v-bind:trellometrics="trellometrics"></metriccard>
@@ -61,6 +63,7 @@ import TrelloCard from './TrelloCard'
 import ContributorCard from './ContributorCard'
 import MetricCard from './MetricCard'
 import ProjectCard from './ProjectCard'
+import GraphReact from './LineReact'
 
 export default {
   name: 'general',
@@ -68,7 +71,8 @@ export default {
     'projectcard': ProjectCard,
     'trellocard': TrelloCard,
     'contributorcard': ContributorCard,
-    'metriccard': MetricCard
+    'metriccard': MetricCard,
+    'graphreact': GraphReact
   },
   data () {
     return {
@@ -100,6 +104,18 @@ export default {
     }
   },
   methods: {
+    setChart () {
+      let names = this.display.repo.map((repo) => repo.name)
+      names = Array.concat(names, this.display.trello.map((trello) => trello.name))
+      const seriesPromise = names.map((name) => request(`http://localhost:4000/json/timeseries/${name}`))
+      Promise.all(seriesPromise)
+        .then((out) => {
+          const reduction = out.reduce((all, resp) => {
+            Array.concat(all, resp.body)
+          }, [])
+          console.log(reduction)
+        })
+    },
     unfilter (msg) {
       if (this.trelloTransforms.hasOwnProperty(msg)) {
         delete this.trelloTransforms[msg]
@@ -121,6 +137,7 @@ export default {
         .then((responses) => {
           this.display.trello = responses
           this.setMetrics()
+          this.setChart()
         })
     },
     applyTransform (object, transform) {
@@ -162,6 +179,7 @@ export default {
         .then((responses) => {
           this.display.repo = responses
           this.setMetrics()
+          this.setChart()
         })
     },
     setSources () {
