@@ -1,7 +1,7 @@
 <template>
   <div class="TrelloHolder">
     <div v-for="board in boards">
-      <projectcard v-bind:project="board"></projectcard>
+      <projectcard v-on:click.native="focus(board)" v-bind:project="board"></projectcard>
     </div>
   </div>
 </template>
@@ -40,8 +40,7 @@ export default {
       this.displayed = this.projects.filter((project) => project.test !== 'notests')
     },
     focus (project) {
-      this.displayed = project
-      window.location.href = '#/project?name=' + project.name
+      window.location.href = '#/repo?name=' + project.shortlink
     }
   },
   mounted () {

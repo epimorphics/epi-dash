@@ -1,6 +1,5 @@
 <template>
   <div>
-  <linetest v-bind:name="this.$route.query.name"></linetest> 
     <div class="section">
       <div>
         <div class="header">{{ project.displayName}}</div>
@@ -9,6 +8,7 @@
         {{ project.test }}
       </div>
     </div>
+    <linetest v-bind:name="this.$route.query.name"></linetest> 
     <div class="section">
       <div class="header">
         Metrics
