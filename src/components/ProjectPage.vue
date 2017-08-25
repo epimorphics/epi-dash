@@ -10,7 +10,7 @@
     </div>
     <linetest v-bind:chartData="{labels: this.labels[0],
           datasets: this.datasets
-          }"></linetest> 
+    }"></linetest>
     <div class="section">
       <div class="header">
         Metrics
@@ -41,6 +41,7 @@ export default {
     return {
       project: { metrics: {} },
       datasets: [],
+      labels: [],
       colors: ['#1D0CCC', '#4597FF', '#FFC685', '#CC6523']
     }
   },

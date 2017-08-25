@@ -5,7 +5,9 @@
       <button id="settings" v-on:click="settings">Settings</button>
     </div>
 
-    <graphreact></graphreact>
+    <graphreact v-bind:chartData="{labels: this.labels[0],
+          datasets: this.datasets
+    }"  ></graphreact>
 
     <div id="allSources" v-if="!settingView">
       <contributorcard v-bind:contributors="contributors"></contributorcard>
@@ -24,20 +26,10 @@
         Project Name <input type="text" v-model="sources.name"></input>
       </div>
       <br></br>
-<!--
-      <div v-for="trello in display.trello">
-        {{ trello.displayName }}
-        <div>
-          <select type="dropdown">
-            <option value="merge">Merge</option>
-            <option value="show">Show</option>
-          </select>
-        </div>
-      </div> -->
       <br></br>
       <div id="sources">
         <div id="repos">
-          ADD REPOS 
+          ADD REPOS
           <div>
             <div v-for="repo in repos">
               <input type="checkbox" v-bind:id="repo.name" v-bind:value="{url: repo.url, transform: {}}" v-model="displayedRepos">{{ repo.displayName }}</input>
@@ -45,7 +37,7 @@
           </div>
         </div>
         <div id="trello">
-          ADD BOARDS 
+          ADD BOARDS
           <div>
             <div v-for="trello in trello">
               <input type="checkbox" v-bind:id="trello.name" v-bind:value="{url: trello.url, transform: {} }" v-model="displayedTrello">{{ trello.displayName }}</input>
@@ -60,6 +52,7 @@
 <script>
 import request from 'superagent'
 import TrelloCard from './TrelloCard'
+import moment from 'moment'
 import ContributorCard from './ContributorCard'
 import MetricCard from './MetricCard'
 import ProjectCard from './ProjectCard'
@@ -90,7 +83,10 @@ export default {
       displayedRepos: [],
       trellometrics: {},
       repometrics: {},
-      metrics: []
+      metrics: [],
+      datasets: [],
+      labels: [],
+      colors: ['#1D0CCC', '#4597FF', '#FFC685', '#CC6523']
     }
   },
   watch: {
@@ -110,10 +106,52 @@ export default {
       const seriesPromise = names.map((name) => request(`http://localhost:4000/json/timeseries/${name}`))
       Promise.all(seriesPromise)
         .then((out) => {
-          const reduction = out.reduce((all, resp) => {
-            Array.concat(all, resp.body)
+          let reduction = out.map(resp =>
+            resp.body
+          )
+          reduction = reduction.reduce((all, obj) => {
+            Object.keys(obj).map((label) => {
+              if (all.hasOwnProperty(label)) {
+                all[label] = Array.concat(all[label], obj[label])
+              } else {
+                all[label] = obj[label]
+              }
+            })
+            return all
+          }, {})
+          reduction = Object.keys(reduction).reduce((all, key) => {
+            all[key] = reduction[key].reduce((acc, obj) => {
+              Object.keys(obj).map((date) => {
+                const timestamp = moment(date, 'YYYY-MM-DDTHH:mm:SS+00:00').format('YYYY-MM-DDTHH:mm')
+                if (acc.hasOwnProperty(timestamp)) {
+                  acc[timestamp] += parseInt(obj[date])
+                } else {
+                  acc[timestamp] = parseInt(obj[date])
+                }
+              })
+              return acc
+            }, {})
+            return all
+          }, {})
+          this.datasets = Object.keys(reduction).map((key) => {
+            let background = this.colors[Object.keys(reduction).findIndex((obj) => obj === key) % this.colors.length]
+            return {
+              pointBackgroundColor: background,
+              pointBorderColor: background,
+              lineColor: background,
+              backgroundColor: background,
+              borderWidth: 3,
+              borderColor: background,
+              fill: false,
+              label: key,
+              data: Object.values(reduction[key])
+            }
+          })
+          const labels = Object.keys(reduction).reduce((all, key) => {
+            all.push(Object.keys(reduction[key]).map((date) => date))
+            return all
           }, [])
-          console.log(reduction)
+          this.labels = labels
         })
     },
     unfilter (msg) {
