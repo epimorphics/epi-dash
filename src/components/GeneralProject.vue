@@ -1,11 +1,14 @@
 <template>
   <div>
+    <br></br>
     <div class="contributors">
       <span class="title">{{ sources.name }}</span>
+      <button id="saveData" v-on:click="saveData">Save</button>
       <button id="settings" v-on:click="settings">Settings</button>
     </div>
 
-    <graphreact v-bind:chartData="{labels: this.labels[0],
+    <br></br>
+    <graphreact class="graph"  v-bind:chartData="{labels: this.labels[0],
           datasets: this.datasets
     }"  ></graphreact>
 
@@ -163,6 +166,12 @@ export default {
     },
     settings () {
       this.settingView = !this.settingView
+    },
+    saveData () {
+      request.post('http://localhost:4000/test')
+      .set('Content-Type', 'application/json')
+      .send({name: this.sources.name, repos: this.displayedRepos, trello: this.displayedTrello})
+      .end()
     },
     updateTrello () {
       const repoPromises = this.displayedTrello.map((elem) =>
@@ -323,5 +332,4 @@ export default {
   flex: auto;
   padding-left: 10px;
 }
-
 </style>
