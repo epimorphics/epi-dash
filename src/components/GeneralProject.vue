@@ -300,11 +300,14 @@ export default {
         .then((responses) => {
           this.contributors = responses
             .reduce((all, project) => {
-              project.avatars.map((avatar) => {
-                if (all.findIndex((contributor) => contributor === avatar) === -1) {
-                  all.push(avatar)
-                }
-              })
+              console.log(all)
+              if (project.avatars != null) {
+                project.avatars.map((avatar) => {
+                  if (all.findIndex((contributor) => contributor === avatar) === -1) {
+                    all.push(avatar)
+                  }
+                })
+              }
               return all
             }, [])
             .filter((elem) => elem != null)
