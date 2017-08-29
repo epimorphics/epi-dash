@@ -30,6 +30,7 @@
       <div id="projectName">
         Project Name <input type="text" v-model="sources.name"></input>
       </div>
+      <button v-on:click="deleteProject">Delete</button>
       <br></br>
       <textarea class="filter" v-model:value="transform"></textarea><button v-on:click="nofilter">Filter </button>
       <br></br>
@@ -229,6 +230,12 @@ export default {
     settings () {
       this.settingView = !this.settingView
     },
+    deleteProject () {
+      request.post(`http://localhost:4000/delete/project/`)
+      .set('Content-Type', 'application/json')
+      .send({name: this.sources.name})
+      .end()
+    },
     saveData () {
       request.post('http://localhost:4000/test')
       .set('Content-Type', 'application/json')
@@ -244,6 +251,7 @@ export default {
       )
       Promise.all(repoPromises)
         .then((responses) => {
+          console.log(responses)
           this.display.trello = responses
           this.setMetrics()
           this.setChart()
@@ -290,6 +298,16 @@ export default {
       )
       Promise.all(repoPromises)
         .then((responses) => {
+          this.contributors = responses
+            .reduce((all, project) => {
+              project.avatars.map((avatar) => {
+                if (all.findIndex((contributor) => contributor === avatar) === -1) {
+                  all.push(avatar)
+                }
+              })
+              return all
+            }, [])
+            .filter((elem) => elem != null)
           this.display.repo = responses
           this.setMetrics()
           this.setChart()
