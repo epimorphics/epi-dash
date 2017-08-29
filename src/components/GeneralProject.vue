@@ -16,6 +16,7 @@
 
     <div id="allSources" v-if="!settingView">
       <contributorcard v-bind:contributors="contributors"></contributorcard>
+      <input type="text" v-model:value="transform"></input><button v-on:click="setMetrics"></button>
       <metriccard v-bind:repometrics="repometrics" v-bind:trellometrics="trellometrics"></metriccard>
       <div v-for="repo in display.repo">
         <projectcard v-bind:project="repo" v-bind:small="true">{{repo}}</projectcard>
@@ -85,13 +86,14 @@ export default {
       displayedTrello: [],
       trelloTransforms: {},
       repos: [],
+      transform: '{ show: [] }',
       displayedRepos: [],
       trellometrics: {},
       repometrics: {},
       metrics: [],
       datasets: [],
       labels: [],
-      colors: ['#1D0CCC', '#4597FF', '#FFC685', '#CC6523']
+      colors: ['#1D0CCC', '#4597FF', '#FFC685', '#CC6523', '#AAF235']
     }
   },
   watch: {
@@ -102,20 +104,55 @@ export default {
     displayedRepos () {
       this.updateRepos()
       this.setMetrics()
+    },
+    transform () {
+      this.setMetrics()
+      this.setChart()
     }
   },
   methods: {
+    chartTransform () {
+      let newData = this.datasets
+      const transform = JSON.parse(this.transform)
+      if (transform) {
+        /* if (transform.hasOwnProperty('merge')) {
+          const val = []
+          transform.merge.map((label) => {
+            const data = newData.find((elem) => elem.label === label)
+            data.data.map((value, index) => {
+              val[index] = value
+            })
+          })
+          let background = '#123456'
+          newData[transform.name] = {
+            pointBackgroundColor: background,
+            pointBorderColor: background,
+            lineColor: background,
+            backgroundColor: background,
+            borderWidth: 3,
+            borderColor: background,
+            fill: false,
+            label: transform.name,
+            data: val
+          }
+        } */
+        if (transform.hasOwnProperty('show')) {
+          newData = this.datasets.filter((data) =>
+            transform.show.findIndex((elem) => elem === data.label) > -1
+          )
+        }
+      }
+      this.datasets = newData
+    },
     setChart () {
       let names = this.display.repo.map((repo) => repo.name)
       names = Array.concat(names, this.display.trello.map((trello) => trello.name))
       const seriesPromise = names.map((name) => request(`http://localhost:4000/json/timeseries/${name}`))
       Promise.all(seriesPromise)
         .then((out) => {
-          console.log(out)
           let reduction = out.map(resp =>
             resp.body
           )
-          console.log(reduction)
           reduction = reduction.reduce((all, obj) => {
             Object.keys(obj).map((label) => {
               if (all.hasOwnProperty(label)) {
@@ -126,7 +163,6 @@ export default {
             })
             return all
           }, {})
-          console.log(reduction)
           reduction = Object.keys(reduction).reduce((all, key) => {
             all[key] = reduction[key].reduce((acc, obj) => {
               Object.keys(obj).map((date) => {
@@ -141,7 +177,6 @@ export default {
             }, {})
             return all
           }, {})
-          console.log(reduction)
           this.datasets = Object.keys(reduction).map((key) => {
             let background = this.colors[Object.keys(reduction).findIndex((obj) => obj === key) % this.colors.length]
             return {
@@ -161,6 +196,7 @@ export default {
             return all
           }, [])
           this.labels = labels
+          this.chartTransform()
         })
     },
     unfilter (msg) {
@@ -176,14 +212,14 @@ export default {
     saveData () {
       request.post('http://localhost:4000/test')
       .set('Content-Type', 'application/json')
-      .send({name: this.sources.name, repos: this.displayedRepos, trello: this.displayedTrello})
+      .send({name: this.sources.name, repos: this.displayedRepos, trello: this.displayedTrello, transform: this.transform})
       .end()
     },
     updateTrello () {
       const repoPromises = this.displayedTrello.map((elem) =>
         request(elem.url)
           .then((response) => {
-            return this.applyTransform(response.body, elem.transform)
+            return response.body
           })
       )
       Promise.all(repoPromises)
@@ -194,29 +230,29 @@ export default {
         })
     },
     applyTransform (object, transform) {
-      const newObject = object
+      let newObject = object
       if (transform) {
         if (transform.merge) {
           let val = 0
-          if (newObject.metrics[transform.name]) {
-            val = newObject.metrics[transform.name]
+          if (newObject[transform.name]) {
+            val = newObject[transform.name]
           }
           transform.merge.map((property) => {
-            if (newObject.metrics.hasOwnProperty(property)) {
-              val += newObject.metrics[property]
-              delete newObject.metrics[property]
+            if (newObject.hasOwnProperty(property)) {
+              val += newObject[property]
+              delete newObject[property]
             }
           })
-          newObject.metrics[transform.name] = val
+          newObject[transform.name] = val
         }
         if (transform.show) {
           const newMetrics = {}
           transform.show.map((property) => {
-            if (newObject.metrics.hasOwnProperty(property)) {
-              newMetrics[property] = newObject.metrics[property]
+            if (newObject.hasOwnProperty(property)) {
+              newMetrics[property] = newObject[property]
             }
           })
-          newObject.metrics = newMetrics
+          newObject = newMetrics
         }
       }
       return newObject
@@ -225,7 +261,7 @@ export default {
       const repoPromises = this.displayedRepos.map((elem) =>
         request(elem.url)
           .then((response) => {
-            return this.applyTransform(response.body, elem.transform)
+            return response.body
           })
       )
       Promise.all(repoPromises)
@@ -241,8 +277,8 @@ export default {
       this.setMetrics()
     },
     setMetrics () {
-      const trellometrics = this.display.trello.map((elem) => elem.metrics)
-      this.trellometrics = trellometrics.reduce((all, elem) => {
+      let trellometrics = this.display.trello.map((elem) => elem.metrics)
+      trellometrics = trellometrics.reduce((all, elem) => {
         Object.keys(elem).map((key) => {
           if (!all.hasOwnProperty(key)) {
             all[key] = elem[key]
@@ -252,8 +288,9 @@ export default {
         })
         return all
       }, {})
-      const repometrics = this.display.repo.map((elem) => elem.metrics)
-      this.repometrics = repometrics.reduce((all, elem) => {
+      this.trellometrics = this.applyTransform(trellometrics, JSON.parse(this.transform))
+      let repometrics = this.display.repo.map((elem) => elem.metrics)
+      repometrics = repometrics.reduce((all, elem) => {
         Object.keys(elem).map((key) => {
           if (!all.hasOwnProperty(key)) {
             all[key] = elem[key]
@@ -263,6 +300,7 @@ export default {
         })
         return all
       }, {})
+      this.repometrics = this.applyTransform(repometrics, JSON.parse(this.transform))
     }
   },
   mounted () {
@@ -282,6 +320,7 @@ export default {
       request(`http://localhost:4000/json/projects/${this.$route.query.name}`)
         .then((response) => {
           this.sources = response.body
+          this.transform = this.sources.transform
           this.sources.repos.map((repo) => {
             this.displayedRepos.push(repo)
           })
