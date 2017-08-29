@@ -4,7 +4,9 @@
       <a href="/#/new/project">new project</a>
     </div>
     <ul class="hello" v-for="project in projects">
-      <projectcard v-bind:project="project"></projectcard>
+      <a v-on:click="focus(project.url)">
+      <projectcard  v-bind:project="project"></projectcard>
+      </a>
     </ul>
   </div>
 </template>
@@ -40,6 +42,9 @@ export default {
     cb () {
       this.displayed = this.projects.filter((project) => project.source === 'cb')
     },
+    repos () {
+      this.displayed = this.projects.filter((project) => project.source === 'repos')
+    },
     git () {
       this.displayed = this.projects.filter((project) => project.source === 'git')
     },
@@ -51,21 +56,17 @@ export default {
     test () {
       this.displayed = this.projects.filter((project) => project.test !== 'notests')
     },
-    focus (project) {
-      this.displayed = project
-      window.location.href = '#/repo?name=' + project.name
+    focus (projecturl) {
+      window.location.href = projecturl
     }
   },
   mounted () {
     request('http://localhost:4000/json/projects')
       .then((response) => {
         this.displayed = response.body.map((project) => {
-          const newproject = {name: project.name, metrics: {}, displayName: project.name, source: 'cb'}
+          const newproject = {name: project.name, metrics: {}, url: project.url, displayName: project.name}
           const repoPromises = []
-          project.cb.map((repo) => {
-            repoPromises.push(request(repo.url).then((response) => response.body))
-          })
-          project.git.map((repo) => {
+          project.repos.map((repo) => {
             repoPromises.push(request(repo.url).then((response) => response.body))
           })
           project.trello.map((repo) => {

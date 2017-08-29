@@ -8,9 +8,11 @@
     </div>
 
     <br></br>
-    <graphreact class="graph"  v-bind:chartData="{labels: this.labels[0],
+    <div class="graph">
+    <graphreact v-bind:chartData="{labels: this.labels[0],
           datasets: this.datasets
     }"  ></graphreact>
+    </div>
 
     <div id="allSources" v-if="!settingView">
       <contributorcard v-bind:contributors="contributors"></contributorcard>
@@ -109,9 +111,11 @@ export default {
       const seriesPromise = names.map((name) => request(`http://localhost:4000/json/timeseries/${name}`))
       Promise.all(seriesPromise)
         .then((out) => {
+          console.log(out)
           let reduction = out.map(resp =>
             resp.body
           )
+          console.log(reduction)
           reduction = reduction.reduce((all, obj) => {
             Object.keys(obj).map((label) => {
               if (all.hasOwnProperty(label)) {
@@ -122,6 +126,7 @@ export default {
             })
             return all
           }, {})
+          console.log(reduction)
           reduction = Object.keys(reduction).reduce((all, key) => {
             all[key] = reduction[key].reduce((acc, obj) => {
               Object.keys(obj).map((date) => {
@@ -136,6 +141,7 @@ export default {
             }, {})
             return all
           }, {})
+          console.log(reduction)
           this.datasets = Object.keys(reduction).map((key) => {
             let background = this.colors[Object.keys(reduction).findIndex((obj) => obj === key) % this.colors.length]
             return {
@@ -271,14 +277,12 @@ export default {
         this.setSources()
       })
     if (this.$route.query.name) {
+      console.log(this.$route.query.name)
       this.settingView = false
-      request(`http://localhost:4000/json/${this.$route.query.name}`)
+      request(`http://localhost:4000/json/projects/${this.$route.query.name}`)
         .then((response) => {
           this.sources = response.body
-          this.sources.cb.map((repo) => {
-            this.displayedRepos.push(repo)
-          })
-          this.sources.git.map((repo) => {
+          this.sources.repos.map((repo) => {
             this.displayedRepos.push(repo)
           })
           this.sources.trello.map((repo) => {
@@ -331,5 +335,10 @@ export default {
   display: flex;
   flex: auto;
   padding-left: 10px;
+}
+
+.graph {
+  width: 50%;
+  margin: auto;
 }
 </style>

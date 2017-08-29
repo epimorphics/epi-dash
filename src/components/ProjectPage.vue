@@ -8,9 +8,11 @@
         {{ project.test }}
       </div>
     </div>
+    <div class="graph">
     <linetest v-bind:chartData="{labels: this.labels[0],
           datasets: this.datasets
     }"></linetest>
+    </div>
     <div class="section">
       <div class="header">
         Metrics
@@ -170,5 +172,10 @@ export default {
 
   .test {
     height: 20px;
+  }
+
+  .graph {
+    width: 50%;
+    margin: auto;
   }
 </style>
