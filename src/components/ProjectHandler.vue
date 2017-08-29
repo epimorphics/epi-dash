@@ -4,7 +4,7 @@
       <a href="/#/new/project">new project</a>
     </div>
     <ul class="hello" v-for="project in projects">
-      <a v-on:click="focus(project.url)">
+      <a v-on:click="focus(project.name)">
       <projectcard  v-bind:project="project"></projectcard>
       </a>
     </ul>
@@ -56,15 +56,15 @@ export default {
     test () {
       this.displayed = this.projects.filter((project) => project.test !== 'notests')
     },
-    focus (projecturl) {
-      window.location.href = projecturl
+    focus (projectName) {
+      window.location.href = '/#/project?name=' + projectName
     }
   },
   mounted () {
     request('http://localhost:4000/json/projects')
       .then((response) => {
         this.displayed = response.body.map((project) => {
-          const newproject = {name: project.name, metrics: {}, url: project.url, displayName: project.name}
+          const newproject = {name: project.name, source: project.source, metrics: {}, url: project.url, displayName: project.name}
           const repoPromises = []
           project.repos.map((repo) => {
             repoPromises.push(request(repo.url).then((response) => response.body))

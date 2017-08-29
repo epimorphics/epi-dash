@@ -16,13 +16,12 @@
 
     <div id="allSources" v-if="!settingView">
       <contributorcard v-bind:contributors="contributors"></contributorcard>
-      <input type="text" v-model:value="transform"></input><button v-on:click="setMetrics"></button>
       <metriccard v-bind:repometrics="repometrics" v-bind:trellometrics="trellometrics"></metriccard>
       <div v-for="repo in display.repo">
         <projectcard v-bind:project="repo" v-bind:small="true">{{repo}}</projectcard>
       </div>
       <div v-for="trello in display.trello">
-        <projectcard v-on:unfilter="unfilter" v-bind:project="trello" v-bind:small="true" v-bind:filtered="true"></projectcard>
+        <projectcard v-bind:project="trello" v-bind:small="true"></projectcard>
       </div>
     </div>
 
@@ -32,6 +31,7 @@
         Project Name <input type="text" v-model="sources.name"></input>
       </div>
       <br></br>
+      <textarea class="filter" v-model:value="transform"></textarea><button v-on:click="nofilter">Filter </button>
       <br></br>
       <div id="sources">
         <div id="repos">
@@ -86,7 +86,8 @@ export default {
       displayedTrello: [],
       trelloTransforms: {},
       repos: [],
-      transform: '{ show: [] }',
+      transform: '{ }',
+      temptransform: '{ }',
       displayedRepos: [],
       trellometrics: {},
       repometrics: {},
@@ -111,33 +112,52 @@ export default {
     }
   },
   methods: {
+    nofilter () {
+      const temp = this.transform
+      this.transform = this.temptransform
+      this.temptransform = temp
+    },
     chartTransform () {
       let newData = this.datasets
       const transform = JSON.parse(this.transform)
       if (transform) {
-        /* if (transform.hasOwnProperty('merge')) {
-          const val = []
-          transform.merge.map((label) => {
-            const data = newData.find((elem) => elem.label === label)
-            data.data.map((value, index) => {
-              val[index] = value
+        if (transform.hasOwnProperty('merge')) {
+          transform.merge.map((merge) => {
+            const val = []
+            merge.fields.map((field) => {
+              const data = newData.find((elem) => elem.label === field)
+              data.data.map((value, index) => {
+                val[index] = value
+              })
             })
+            let background = merge.color
+            newData.push({
+              pointBackgroundColor: background,
+              pointBorderColor: background,
+              lineColor: background,
+              backgroundColor: background,
+              borderWidth: 3,
+              borderColor: background,
+              fill: false,
+              label: merge.name,
+              data: val
+            })
+            if (merge.hide) {
+              if (transform.hasOwnProperty('hide')) {
+                transform.hide = Array.concat(transform.hide, merge.fields)
+              } else {
+                transform.hide = merge.fields
+              }
+            }
           })
-          let background = '#123456'
-          newData[transform.name] = {
-            pointBackgroundColor: background,
-            pointBorderColor: background,
-            lineColor: background,
-            backgroundColor: background,
-            borderWidth: 3,
-            borderColor: background,
-            fill: false,
-            label: transform.name,
-            data: val
-          }
-        } */
+        }
+        if (transform.hasOwnProperty('hide')) {
+          newData = newData.filter((data) =>
+            transform.hide.findIndex((elem) => elem === data.label) <= -1
+          )
+        }
         if (transform.hasOwnProperty('show')) {
-          newData = this.datasets.filter((data) =>
+          newData = newData.filter((data) =>
             transform.show.findIndex((elem) => elem === data.label) > -1
           )
         }
@@ -233,17 +253,21 @@ export default {
       let newObject = object
       if (transform) {
         if (transform.merge) {
-          let val = 0
-          if (newObject[transform.name]) {
-            val = newObject[transform.name]
-          }
-          transform.merge.map((property) => {
-            if (newObject.hasOwnProperty(property)) {
-              val += newObject[property]
-              delete newObject[property]
+          transform.merge.map((merge) => {
+            let val = 0
+            if (newObject[merge.name]) {
+              val = newObject[merge.name]
             }
+            merge.fields.map((property) => {
+              if (newObject.hasOwnProperty(property)) {
+                val += newObject[property]
+                if (merge.hide) {
+                  delete newObject[property]
+                }
+              }
+            })
+            newObject[merge.name] = val
           })
-          newObject[transform.name] = val
         }
         if (transform.show) {
           const newMetrics = {}
@@ -374,6 +398,11 @@ export default {
   display: flex;
   flex: auto;
   padding-left: 10px;
+}
+
+.filter {
+ width: 100%;
+ height: 400px;
 }
 
 .graph {

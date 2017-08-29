@@ -107,6 +107,10 @@
     background-color: white;
   }
 
+  .epi {
+    content:url("http://localhost:8080/static/epi-icon.png");
+  }
+
   .source {
     width: 50px;
     height: 50px;
