@@ -6,6 +6,7 @@
     <br>
     <div class="container">
      <a href="/">Projects</a> <a href="/#/repos">Repos</a> <a href="/#/trello">Trello Boards</a>
+      <a href="/#/new/project">new project</a>
      <br>
     </div>
     <div class="container">

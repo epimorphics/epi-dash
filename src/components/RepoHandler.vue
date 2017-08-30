@@ -14,9 +14,6 @@
       <button v-on:click="sort('Bugs')">Bugs</button>
       <button v-on:click="sort('Issues')">Issues</button>
     </div>
-    <div class="filters">
-      <a href="/#/new/project">new project</a>
-    </div>
     <ul class="hello" v-for="project in displayed">
       <projectcard v-on:click.native="focus(project)" v-bind:project="project"></projectcard>
     </ul>

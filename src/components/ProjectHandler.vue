@@ -1,18 +1,16 @@
 <template>
   <div class="projectHolder">
-    <div class="filters">
-      <a href="/#/new/project">new project</a>
+    <div class="container">
+      <div class="hello" v-for="project in projects">
+          <!-- <projectcard  v-bind:project="project"></projectcard> -->
+        <projectcard class="card" v-bind:graph="true" v-bind:name="project.name"></projectcard>
+      </div>
     </div>
-    <ul class="hello" v-for="project in projects">
-      <a v-on:click="focus(project.name)">
-      <projectcard  v-bind:project="project"></projectcard>
-      </a>
-    </ul>
   </div>
 </template>
 
 <script>
-import projectcard from './ProjectCard'
+import projectcard from './GeneralProjectCard'
 import request from 'superagent'
 
 export default {
@@ -36,26 +34,6 @@ export default {
     }
   },
   methods: {
-    all () {
-      this.displayed = this.projects
-    },
-    cb () {
-      this.displayed = this.projects.filter((project) => project.source === 'cb')
-    },
-    repos () {
-      this.displayed = this.projects.filter((project) => project.source === 'repos')
-    },
-    git () {
-      this.displayed = this.projects.filter((project) => project.source === 'git')
-    },
-    sort (key) {
-      var temp = this.projects.filter((project) => key in project.metrics)
-      this.displayed = temp.sort((x, y) =>
-        y.metrics[key] - x.metrics[key])
-    },
-    test () {
-      this.displayed = this.projects.filter((project) => project.test !== 'notests')
-    },
     focus (projectName) {
       window.location.href = '/#/project?name=' + projectName
     }
@@ -92,10 +70,22 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 .filters {
   text-align: center;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.card {
+  width: 600px;
+  height: 400px;
+  margin: 20px;
 }
 
 </style>
