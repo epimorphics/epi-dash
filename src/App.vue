@@ -4,9 +4,11 @@
       <a href="/"><img src="./assets/epimorphics-logo.png"></a>
     </div>
     <br>
-    <div class="container">
-     <a href="/">Projects</a> <a href="/#/repos">Repos</a> <a href="/#/trello">Trello Boards</a>
-      <a href="/#/new/project">new project</a>
+    <div class="links">
+      <a href="/"><span class="link">Projects</span></a>
+      <a href="/#/repos"><span class="link">Repos</span></a>
+      <a href="/#/trello"><span class="link">Trello Boards</span></a>
+      <a href="/#/new/project"><span class="link" href="/#/new/project">New Project</span></a>
      <br>
     </div>
     <div class="container">
@@ -22,6 +24,14 @@ export default {
 </script>
 
 <style>
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+</style>
+
+<style scoped>
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -37,8 +47,22 @@ export default {
   width: 350px;
 }
 
-.container {
-  width: 75%;
+
+.links {
+  width: 80%;
   margin: 0 auto;
+  background-color: #dddddd;
+  display: flex;
+  justify-content: center;
 }
+
+.link {
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  padding: 20px 20px;
+}
+
 </style>

@@ -53,10 +53,19 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
-.filters {
-  text-align: center;
+.trelloHolder {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  flex-align: stretch;
+  align-items: center;
+}
+
+.trello {
+  width: 800px;
+  margin: 10px;
 }
 
 </style>

@@ -89,10 +89,23 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
 .filters {
   text-align: center;
+}
+
+.projectHolder {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  flex-align: stretch;
+  align-items: center;
+}
+
+.project {
+  width: 800px;
+  margin: 10px;
 }
 
 </style>

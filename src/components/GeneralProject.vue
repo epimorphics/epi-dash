@@ -212,8 +212,9 @@ export default {
 
 #sources {
   display: flex;
-  float: none;
-  max-height: 400px;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .avatar {
@@ -243,12 +244,24 @@ export default {
 }
 
 .filter {
- width: 100%;
- height: 400px;
+ height: 500px;
+ min-width: 400px;
 }
 
 .graph {
   width: 50%;
   margin: auto;
+}
+ 
+#repos {
+  width: 500px;
+  height: 500px;
+  overflow: scroll;
+}
+
+#trello {
+  width: 500px;
+  height: 500px;
+  overflow: scroll;
 }
 </style>
