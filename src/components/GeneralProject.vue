@@ -59,11 +59,11 @@
 <script>
 import request from 'superagent'
 import TrelloCard from './TrelloCard'
-import moment from 'moment'
 import ContributorCard from './ContributorCard'
 import MetricCard from './MetricCard'
 import ProjectCard from './ProjectCard'
 import GraphReact from './LineReact'
+import {getProject, getDataset, transformDataset, mergeMetrics, getElems, applyTransform} from '../models/Project'
 
 export default {
   name: 'general',
@@ -101,11 +101,17 @@ export default {
   watch: {
     displayedTrello () {
       this.updateTrello()
-      this.setMetrics()
+        .then(() => {
+          this.setChart()
+          this.setMetrics()
+        })
     },
     displayedRepos () {
       this.updateRepos()
-      this.setMetrics()
+        .then(() => {
+          this.setChart()
+          this.setMetrics()
+        })
     },
     transform () {
       this.setMetrics()
@@ -113,120 +119,6 @@ export default {
     }
   },
   methods: {
-    nofilter () {
-      const temp = this.transform
-      this.transform = this.temptransform
-      this.temptransform = temp
-    },
-    chartTransform () {
-      let newData = this.datasets
-      const transform = JSON.parse(this.transform)
-      if (transform) {
-        if (transform.hasOwnProperty('merge')) {
-          transform.merge.map((merge) => {
-            const val = []
-            merge.fields.map((field) => {
-              const data = newData.find((elem) => elem.label === field)
-              data.data.map((value, index) => {
-                val[index] = value
-              })
-            })
-            let background = merge.color
-            newData.push({
-              pointBackgroundColor: background,
-              pointBorderColor: background,
-              lineColor: background,
-              backgroundColor: background,
-              borderWidth: 3,
-              borderColor: background,
-              fill: false,
-              label: merge.name,
-              data: val
-            })
-            if (merge.hide) {
-              if (transform.hasOwnProperty('hide')) {
-                transform.hide = Array.concat(transform.hide, merge.fields)
-              } else {
-                transform.hide = merge.fields
-              }
-            }
-          })
-        }
-        if (transform.hasOwnProperty('hide')) {
-          newData = newData.filter((data) =>
-            transform.hide.findIndex((elem) => elem === data.label) <= -1
-          )
-        }
-        if (transform.hasOwnProperty('show')) {
-          newData = newData.filter((data) =>
-            transform.show.findIndex((elem) => elem === data.label) > -1
-          )
-        }
-      }
-      this.datasets = newData
-    },
-    setChart () {
-      let names = this.display.repo.map((repo) => repo.name)
-      names = Array.concat(names, this.display.trello.map((trello) => trello.name))
-      const seriesPromise = names.map((name) => request(`http://localhost:4000/json/timeseries/${name}`))
-      Promise.all(seriesPromise)
-        .then((out) => {
-          let reduction = out.map(resp =>
-            resp.body
-          )
-          reduction = reduction.reduce((all, obj) => {
-            Object.keys(obj).map((label) => {
-              if (all.hasOwnProperty(label)) {
-                all[label] = Array.concat(all[label], obj[label])
-              } else {
-                all[label] = obj[label]
-              }
-            })
-            return all
-          }, {})
-          reduction = Object.keys(reduction).reduce((all, key) => {
-            all[key] = reduction[key].reduce((acc, obj) => {
-              Object.keys(obj).map((date) => {
-                const timestamp = moment(date, 'YYYY-MM-DDTHH:mm:SS+00:00').format('YYYY-MM-DDTHH:mm')
-                if (acc.hasOwnProperty(timestamp)) {
-                  acc[timestamp] += parseInt(obj[date])
-                } else {
-                  acc[timestamp] = parseInt(obj[date])
-                }
-              })
-              return acc
-            }, {})
-            return all
-          }, {})
-          this.datasets = Object.keys(reduction).map((key) => {
-            let background = this.colors[Object.keys(reduction).findIndex((obj) => obj === key) % this.colors.length]
-            return {
-              pointBackgroundColor: background,
-              pointBorderColor: background,
-              lineColor: background,
-              backgroundColor: background,
-              borderWidth: 3,
-              borderColor: background,
-              fill: false,
-              label: key,
-              data: Object.values(reduction[key])
-            }
-          })
-          const labels = Object.keys(reduction).reduce((all, key) => {
-            all.push(Object.keys(reduction[key]).map((date) => date))
-            return all
-          }, [])
-          this.labels = labels
-          this.chartTransform()
-        })
-    },
-    unfilter (msg) {
-      if (this.trelloTransforms.hasOwnProperty(msg)) {
-        delete this.trelloTransforms[msg]
-      }
-      this.setMetrics()
-      this.updateTrello()
-    },
     settings () {
       this.settingView = !this.settingView
     },
@@ -242,65 +134,32 @@ export default {
       .send({name: this.sources.name, repos: this.displayedRepos, trello: this.displayedTrello, transform: this.transform})
       .end()
     },
-    updateTrello () {
-      const repoPromises = this.displayedTrello.map((elem) =>
-        request(elem.url)
-          .then((response) => {
-            return response.body
-          })
-      )
-      Promise.all(repoPromises)
-        .then((responses) => {
-          console.log(responses)
-          this.display.trello = responses
-          this.setMetrics()
-          this.setChart()
+    nofilter () {
+      const temp = this.transform
+      this.transform = this.temptransform
+      this.temptransform = temp
+    },
+    setChart () {
+      let names = this.display.repo.map((repo) => repo.name)
+      names = Array.concat(names, this.display.trello.map((trello) => trello.name))
+      getDataset(names)
+        .then((data) => {
+          this.datasets = data.datasets
+          this.labels = data.labels
+          this.datasets = transformDataset(this.datasets, this.transform)
         })
     },
-    applyTransform (object, transform) {
-      let newObject = object
-      if (transform) {
-        if (transform.merge) {
-          transform.merge.map((merge) => {
-            let val = 0
-            if (newObject[merge.name]) {
-              val = newObject[merge.name]
-            }
-            merge.fields.map((property) => {
-              if (newObject.hasOwnProperty(property)) {
-                val += newObject[property]
-                if (merge.hide) {
-                  delete newObject[property]
-                }
-              }
-            })
-            newObject[merge.name] = val
-          })
-        }
-        if (transform.show) {
-          const newMetrics = {}
-          transform.show.map((property) => {
-            if (newObject.hasOwnProperty(property)) {
-              newMetrics[property] = newObject[property]
-            }
-          })
-          newObject = newMetrics
-        }
-      }
-      return newObject
+    updateTrello () {
+      return Promise.all(getElems(this.displayedTrello))
+        .then((responses) => {
+          this.display.trello = responses
+        })
     },
     updateRepos () {
-      const repoPromises = this.displayedRepos.map((elem) =>
-        request(elem.url)
-          .then((response) => {
-            return response.body
-          })
-      )
-      Promise.all(repoPromises)
+      return Promise.all(getElems(this.displayedRepos))
         .then((responses) => {
           this.contributors = responses
             .reduce((all, project) => {
-              console.log(all)
               if (project.avatars != null) {
                 project.avatars.map((avatar) => {
                   if (all.findIndex((contributor) => contributor === avatar) === -1) {
@@ -312,40 +171,17 @@ export default {
             }, [])
             .filter((elem) => elem != null)
           this.display.repo = responses
-          this.setMetrics()
-          this.setChart()
         })
     },
     setSources () {
       this.updateTrello()
       this.updateRepos()
+      this.setChart()
       this.setMetrics()
     },
     setMetrics () {
-      let trellometrics = this.display.trello.map((elem) => elem.metrics)
-      trellometrics = trellometrics.reduce((all, elem) => {
-        Object.keys(elem).map((key) => {
-          if (!all.hasOwnProperty(key)) {
-            all[key] = elem[key]
-          } else {
-            all[key] += elem[key]
-          }
-        })
-        return all
-      }, {})
-      this.trellometrics = this.applyTransform(trellometrics, JSON.parse(this.transform))
-      let repometrics = this.display.repo.map((elem) => elem.metrics)
-      repometrics = repometrics.reduce((all, elem) => {
-        Object.keys(elem).map((key) => {
-          if (!all.hasOwnProperty(key)) {
-            all[key] = elem[key]
-          } else {
-            all[key] += elem[key]
-          }
-        })
-        return all
-      }, {})
-      this.repometrics = this.applyTransform(repometrics, JSON.parse(this.transform))
+      this.trellometrics = applyTransform(mergeMetrics(this.display.trello), JSON.parse(this.transform))
+      this.repometrics = applyTransform(mergeMetrics(this.display.repo), JSON.parse(this.transform))
     }
   },
   mounted () {
@@ -360,18 +196,13 @@ export default {
         this.setSources()
       })
     if (this.$route.query.name) {
-      console.log(this.$route.query.name)
       this.settingView = false
-      request(`http://localhost:4000/json/projects/${this.$route.query.name}`)
-        .then((response) => {
-          this.sources = response.body
-          this.transform = this.sources.transform
-          this.sources.repos.map((repo) => {
-            this.displayedRepos.push(repo)
-          })
-          this.sources.trello.map((repo) => {
-            this.displayedTrello.push(repo)
-          })
+      getProject(this.$route.query.name)
+        .then((project) => {
+          this.sources = project
+          this.transform = project.transform
+          this.displayedRepos = project.repos
+          this.displayedTrello = project.trello
           this.setSources()
         })
     }
