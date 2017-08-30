@@ -2,20 +2,18 @@
   <div>
     <br></br>
     <div class="contributors">
-      <span class="title">{{ sources.name }}</span>
-      <button id="saveData" v-on:click="saveData">Save</button>
-      <button id="settings" v-on:click="settings">Settings</button>
+      <span class="title">{{ project.name }}</span>
+      <button class="settings" v-on:click="settings">Settings</button>
+      <button class="settings" v-on:click="saveData">Save</button>
     </div>
 
     <br></br>
     <div class="graph">
-    <graphreact v-bind:chartData="{labels: this.labels[0],
-          datasets: this.datasets
-    }"  ></graphreact>
+    <graphreact v-bind:chartData="chartData"></graphreact>
     </div>
 
     <div id="allSources" v-if="!settingView">
-      <contributorcard v-bind:contributors="contributors"></contributorcard>
+      <contributorcard v-bind:contributors="project.contributors"></contributorcard>
       <metriccard v-bind:repometrics="repometrics" v-bind:trellometrics="trellometrics"></metriccard>
       <div v-for="repo in display.repo">
         <projectcard v-bind:project="repo" v-bind:small="true">{{repo}}</projectcard>
@@ -28,11 +26,11 @@
     <div id="settings" v-else>
       <br></br>
       <div id="projectName">
-        Project Name <input type="text" v-model="sources.name"></input>
+        Project Name <input type="text" v-model="project.name"></input>
       </div>
       <button v-on:click="deleteProject">Delete</button>
       <br></br>
-      <textarea class="filter" v-model:value="transform"></textarea><button v-on:click="nofilter">Filter </button>
+      <textarea class="filter" v-model:value="project.transform"></textarea><button v-on:click="nofilter">Filter </button>
       <br></br>
       <div id="sources">
         <div id="repos">
@@ -58,44 +56,42 @@
 
 <script>
 import request from 'superagent'
-import TrelloCard from './TrelloCard'
 import ContributorCard from './ContributorCard'
 import MetricCard from './MetricCard'
 import ProjectCard from './ProjectCard'
 import GraphReact from './LineReact'
-import {getProject, getDataset, transformDataset, mergeMetrics, getElems, applyTransform} from '../models/Project'
+import {getProject, getChartdata, mergeMetrics, getElems, applyTransform} from '../models/Project'
 
 export default {
   name: 'general',
   components: {
     'projectcard': ProjectCard,
-    'trellocard': TrelloCard,
     'contributorcard': ContributorCard,
     'metriccard': MetricCard,
     'graphreact': GraphReact
   },
   data () {
     return {
-      sources: { name: 'New Project' },
-      contributors: [],
+      project: { name: 'New Project' },
       settingView: true,
       display: {
         trello: [],
         repo: []
       },
       trello: [],
-      displayedTrello: [],
-      trelloTransforms: {},
       repos: [],
-      transform: '{ }',
       temptransform: '{ }',
+      displayedTrello: [],
       displayedRepos: [],
       trellometrics: {},
       repometrics: {},
-      metrics: [],
-      datasets: [],
-      labels: [],
+      chartData: {},
       colors: ['#1D0CCC', '#4597FF', '#FFC685', '#CC6523', '#AAF235']
+    }
+  },
+  computed: {
+    transform () {
+      return this.project.transform
     }
   },
   watch: {
@@ -125,29 +121,19 @@ export default {
     deleteProject () {
       request.post(`http://localhost:4000/delete/project/`)
       .set('Content-Type', 'application/json')
-      .send({name: this.sources.name})
+      .send({name: this.project.name})
       .end()
     },
     saveData () {
       request.post('http://localhost:4000/test')
       .set('Content-Type', 'application/json')
-      .send({name: this.sources.name, repos: this.displayedRepos, trello: this.displayedTrello, transform: this.transform})
+      .send({name: this.project.name, repos: this.displayedRepos, trello: this.displayedTrello, transform: this.project.transform})
       .end()
     },
     nofilter () {
-      const temp = this.transform
-      this.transform = this.temptransform
+      const temp = this.project.transform
+      this.project.transform = this.temptransform
       this.temptransform = temp
-    },
-    setChart () {
-      let names = this.display.repo.map((repo) => repo.name)
-      names = Array.concat(names, this.display.trello.map((trello) => trello.name))
-      getDataset(names)
-        .then((data) => {
-          this.datasets = data.datasets
-          this.labels = data.labels
-          this.datasets = transformDataset(this.datasets, this.transform)
-        })
     },
     updateTrello () {
       return Promise.all(getElems(this.displayedTrello))
@@ -158,7 +144,7 @@ export default {
     updateRepos () {
       return Promise.all(getElems(this.displayedRepos))
         .then((responses) => {
-          this.contributors = responses
+          this.project.contributors = responses
             .reduce((all, project) => {
               if (project.avatars != null) {
                 project.avatars.map((avatar) => {
@@ -169,8 +155,15 @@ export default {
               }
               return all
             }, [])
-            .filter((elem) => elem != null)
           this.display.repo = responses
+        })
+    },
+    setChart () {
+      let names = this.display.repo.map((repo) => repo.name)
+      names = Array.concat(names, this.display.trello.map((trello) => trello.name))
+      getChartdata(names, this.project.transform)
+        .then((data) => {
+          this.chartData = data
         })
     },
     setSources () {
@@ -180,27 +173,24 @@ export default {
       this.setMetrics()
     },
     setMetrics () {
-      this.trellometrics = applyTransform(mergeMetrics(this.display.trello), JSON.parse(this.transform))
-      this.repometrics = applyTransform(mergeMetrics(this.display.repo), JSON.parse(this.transform))
+      this.trellometrics = applyTransform(mergeMetrics(this.display.trello), JSON.parse(this.project.transform))
+      this.repometrics = applyTransform(mergeMetrics(this.display.repo), JSON.parse(this.project.transform))
     }
   },
   mounted () {
     request('http://localhost:4000/json/trello')
       .then((response) => {
         this.trello = response.body
-        this.setSources()
       })
     request('http://localhost:4000/json/repos')
       .then((response) => {
         this.repos = response.body.projects
-        this.setSources()
       })
     if (this.$route.query.name) {
       this.settingView = false
       getProject(this.$route.query.name)
         .then((project) => {
-          this.sources = project
-          this.transform = project.transform
+          this.project = project
           this.displayedRepos = project.repos
           this.displayedTrello = project.trello
           this.setSources()
@@ -237,7 +227,7 @@ export default {
   background-color: #dddddd;
 }
 
-#settings {
+.settings {
   float: right;
   height: 50px;
 }

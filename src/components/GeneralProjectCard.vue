@@ -1,124 +1,168 @@
 <template>
   <div>
-    <div class="header" v-on:click="openRepo">
-      <div class="projectName">{{ project.name }}</div>
+    <br></br>
+    <cardheader
+      v-bind:source="source"
+      v-bind:title="name"
+      v-bind:contributors="project.contributors"
+      v-bind:href="`#/project?name=${encodeURI(name)}`"
+    >
+    </cardheader>
+
+    <br></br>
+    <div class="graph">
+    <graphreact v-if="graph" v-bind:chartData="chartData"></graphreact>
     </div>
-    <div v-if="!open" class="body">
-    <div>{{display.repo}}</div>
-    <div>{{display.trello}}</div>
-    </div>
+
+    <metriccard v-if="metrics" v-bind:repometrics="repometrics" v-bind:trellometrics="trellometrics"></metriccard>
   </div>
 </template>
 
 <script>
-import ProjectCard from './ProjectCard'
-import TrelloCard from './TrelloCard'
+import request from 'superagent'
+import CardHeader from './CardHeader'
 import ContributorCard from './ContributorCard'
 import MetricCard from './MetricCard'
-import Project from '../models/CustomProject'
+import ProjectCard from './ProjectCard'
+import GraphReact from './LineReact'
+import {getProject, getChartdata, mergeMetrics, getElems, applyTransform} from '../models/Project'
 
 export default {
   name: 'general',
   components: {
     'projectcard': ProjectCard,
-    'trellocard': TrelloCard,
+    'cardheader': CardHeader,
     'contributorcard': ContributorCard,
-    'metriccard': MetricCard
+    'metriccard': MetricCard,
+    'graphreact': GraphReact
   },
-  props: ['trello', 'repos', 'project'],
+  props: ['name', 'graph', 'metrics'],
   data () {
     return {
-      sources: { name: 'New Project' },
-      contributors: [],
+      project: { name: 'New Project' },
       settingView: true,
+      source: 'epi',
       display: {
         trello: [],
         repo: []
       },
-      trelloTransforms: {},
+      trello: [],
+      repos: [],
+      temptransform: '{ }',
+      displayedTrello: [],
+      displayedRepos: [],
       trellometrics: {},
       repometrics: {},
-      metrics: []
-    }
-  },
-  mounted () {
-    this.project = new Project(this.project)
-    this.project.fetch()
-      .then((out) => {
-        console.log(out)
-        this.display.trello = out.trello
-        this.display.repo = out.repo
-      })
-  },
-  computed: {
-    displayedTrello () {
-      return this.project.trello.reduce((all, elem) => Array.concat(all, Object.keys(elem)), [])
-    },
-    displayedRepos () {
-      const git = this.project.git.map((repo) => repo.name)
-      const cb = this.project.cb.map((repo) => repo.name)
-      return git.concat(cb)
-    },
-    allRepos () {
-      return this.repos
+      chartData: {},
+      colors: ['#1D0CCC', '#4597FF', '#FFC685', '#CC6523', '#AAF235']
     }
   },
   watch: {
-    repos () {
-      this.metrics = this.allRepos.reduce((all, elem) => {
-        return all.concat(elem.metrics)
-      })
+    displayedTrello () {
+      this.updateTrello()
+        .then(() => {
+          this.setChart()
+          this.setMetrics()
+        })
+    },
+    displayedRepos () {
+      this.updateRepos()
+        .then(() => {
+          this.setChart()
+          this.setMetrics()
+        })
+    },
+    transform () {
+      this.setMetrics()
+      this.setChart()
     }
   },
   methods: {
-    updateTrello () {
-      const updatedDisplay = this.trello.reduce((all, elem) => {
-        if (this.displayedTrello.includes(elem.shortLink)) {
-          if (this.trelloTransforms.hasOwnProperty(elem.shortLink)) {
-            console.log('true')
-            all.push(this.applyTransform(elem, this.trelloTransforms[elem.shortLink].transform))
-          } else {
-            console.log('false')
-            all.push(elem)
-          }
-        }
-        return all
-      }, [])
-      this.display.trello = updatedDisplay
+    settings () {
+      this.settingView = !this.settingView
     },
-    applyTransform (object, transform) {
-      const newObject = object
-      if (transform) {
-        if (transform.merge) {
-          let val = 0
-          if (newObject.metrics[transform.name]) {
-            val = newObject.metrics[transform.name]
-          }
-          transform.merge.map((property) => {
-            if (newObject.metrics.hasOwnProperty(property)) {
-              val += newObject.metrics[property]
-              delete newObject.metrics[property]
-            }
-          })
-          newObject.metrics[transform.name] = val
-        }
-        if (transform.show) {
-          const newMetrics = {}
-          transform.show.map((property) => {
-            if (newObject.metrics.hasOwnProperty(property)) {
-              newMetrics[property] = newObject.metrics[property]
-            }
-          })
-          newObject.metrics = newMetrics
-        }
-      }
-      return newObject
+    deleteProject () {
+      request.post(`http://localhost:4000/delete/project/`)
+      .set('Content-Type', 'application/json')
+      .send({name: this.project.name})
+      .end()
+    },
+    saveData () {
+      request.post('http://localhost:4000/test')
+      .set('Content-Type', 'application/json')
+      .send({name: this.project.name, repos: this.displayedRepos, trello: this.displayedTrello, transform: this.project.transform})
+      .end()
+    },
+    nofilter () {
+      const temp = this.project.transform
+      this.project.transform = this.temptransform
+      this.temptransform = temp
+    },
+    updateTrello () {
+      return Promise.all(getElems(this.displayedTrello))
+        .then((responses) => {
+          this.display.trello = responses
+        })
+    },
+    updateRepos () {
+      return Promise.all(getElems(this.displayedRepos))
+        .then((responses) => {
+          this.project.contributors = responses
+            .reduce((all, project) => {
+              if (project.avatars != null) {
+                project.avatars.map((avatar) => {
+                  if (all.findIndex((contributor) => contributor === avatar) === -1) {
+                    all.push(avatar)
+                  }
+                })
+              }
+              return all
+            }, [])
+          this.display.repo = responses
+        })
+    },
+    setChart () {
+      let names = this.display.repo.map((repo) => repo.name)
+      names = Array.concat(names, this.display.trello.map((trello) => trello.name))
+      getChartdata(names, this.project.transform)
+        .then((data) => {
+          this.chartData = data
+        })
+    },
+    setSources () {
+      this.updateTrello()
+      this.updateRepos()
+      this.setChart()
+      this.setMetrics()
+    },
+    setMetrics () {
+      this.trellometrics = applyTransform(mergeMetrics(this.display.trello), JSON.parse(this.project.transform))
+      this.repometrics = applyTransform(mergeMetrics(this.display.repo), JSON.parse(this.project.transform))
+    }
+  },
+  mounted () {
+    request('http://localhost:4000/json/trello')
+      .then((response) => {
+        this.trello = response.body
+      })
+    request('http://localhost:4000/json/repos')
+      .then((response) => {
+        this.repos = response.body.projects
+      })
+    if (this.name) {
+      getProject(encodeURI(this.name))
+        .then((project) => {
+          this.project = project
+          this.displayedRepos = project.repos
+          this.displayedTrello = project.trello
+          this.setSources()
+        })
     }
   }
 }
 </script>
 
-<style>
+<style scoped>
 .title {
   font-size: 40px;
 }
@@ -158,6 +202,21 @@ export default {
   display: flex;
   flex: auto;
   padding-left: 10px;
+}
+
+.filter {
+ width: 100%;
+ height: 400px;
+}
+
+.graph {
+  width: 50%;
+  margin: auto;
+}
+
+a {
+  text-decoration: none;
+  color:inherit;
 }
 
 </style>

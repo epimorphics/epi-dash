@@ -57,7 +57,7 @@ export function applyTransform (object, transform) {
   return newObject
 }
 
-export function getDataset (names) {
+export function getChartdata (names, transform) {
   const seriesPromise = names.map((name) => request(`http://localhost:4000/json/timeseries/${name}`))
   return Promise.all(seriesPromise)
     .then((out) => {
@@ -88,7 +88,7 @@ export function getDataset (names) {
         }, {})
         return all
       }, {})
-      const datasets = Object.keys(reduction).map((key) => {
+      let datasets = Object.keys(reduction).map((key) => {
         let background = colors[Object.keys(reduction).findIndex((obj) => obj === key) % colors.length]
         return {
           pointBackgroundColor: background,
@@ -106,7 +106,8 @@ export function getDataset (names) {
         all.push(Object.keys(reduction[key]).map((date) => date))
         return all
       }, [])
-      return {labels, datasets}
+      datasets = transformDataset(datasets, transform)
+      return {labels: labels[0], datasets: datasets}
     })
 }
 
@@ -121,7 +122,7 @@ export function mergeMetrics (metrics) {
         }
       })
       return all
-    })
+    }, {})
 }
 
 export function transformDataset (dataset, transformStr) {
