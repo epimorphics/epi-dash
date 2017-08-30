@@ -1,7 +1,7 @@
 <template>
-  <div class="TrelloHolder">
-    <div v-for="board in boards">
-      <projectcard v-on:click.native="focus(board)" v-bind:project="board"></projectcard>
+  <div class="trelloHolder">
+    <div class="trello" v-for="board in boards">
+      <projectcard v-bind:project="board"></projectcard>
     </div>
   </div>
 </template>

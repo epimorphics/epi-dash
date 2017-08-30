@@ -1,6 +1,7 @@
 <template>
   <div class="header">
     <span class="projectName">Contributors</span>
+
     <img class="avatar" v-for="login in contributors" v-bind:src="login"></img>
   </div>
 </template>

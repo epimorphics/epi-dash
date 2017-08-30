@@ -27,23 +27,24 @@
       <br></br>
       <div id="projectName">
         Project Name <input type="text" v-model="project.name"></input>
+        <button v-on:click="deleteProject">Delete</button>
       </div>
-      <button v-on:click="deleteProject">Delete</button>
-      <br></br>
-      <textarea class="filter" v-model:value="project.transform"></textarea><button v-on:click="nofilter">Filter </button>
       <br></br>
       <div id="sources">
-        <div id="repos">
+        <div>
+          <textarea class="filter" v-model:value="project.transform"></textarea>
+        </div>
+        <div>
           ADD REPOS
-          <div>
+          <div id="repos">
             <div v-for="repo in repos">
               <input type="checkbox" v-bind:id="repo.name" v-bind:value="{url: repo.url, transform: {}}" v-model="displayedRepos">{{ repo.displayName }}</input>
             </div>
           </div>
         </div>
-        <div id="trello">
+        <div>
           ADD BOARDS
-          <div>
+          <div id="trello">
             <div v-for="trello in trello">
               <input type="checkbox" v-bind:id="trello.name" v-bind:value="{url: trello.url, transform: {} }" v-model="displayedTrello">{{ trello.displayName }}</input>
             </div>
@@ -72,7 +73,7 @@ export default {
   },
   data () {
     return {
-      project: { name: 'New Project' },
+      project: { name: 'New Project', transform: '{}', repos: [], trello: [] },
       settingView: true,
       display: {
         trello: [],
@@ -85,8 +86,7 @@ export default {
       displayedRepos: [],
       trellometrics: {},
       repometrics: {},
-      chartData: {},
-      colors: ['#1D0CCC', '#4597FF', '#FFC685', '#CC6523', '#AAF235']
+      chartData: {labels: [], dataset: []}
     }
   },
   computed: {
@@ -123,8 +123,10 @@ export default {
       .set('Content-Type', 'application/json')
       .send({name: this.project.name})
       .end()
+      window.location.href = '#/'
     },
     saveData () {
+      window.location.href = `#/project?name=${encodeURI(this.project.name)}`
       request.post('http://localhost:4000/test')
       .set('Content-Type', 'application/json')
       .send({name: this.project.name, repos: this.displayedRepos, trello: this.displayedTrello, transform: this.project.transform})
@@ -180,11 +182,11 @@ export default {
   mounted () {
     request('http://localhost:4000/json/trello')
       .then((response) => {
-        this.trello = response.body
+        this.trello = response.body.sort((a, b) => a.displayName.localeCompare(b.displayName))
       })
     request('http://localhost:4000/json/repos')
       .then((response) => {
-        this.repos = response.body.projects
+        this.repos = response.body.projects.sort((a, b) => a.displayName.localeCompare(b.displayName))
       })
     if (this.$route.query.name) {
       this.settingView = false

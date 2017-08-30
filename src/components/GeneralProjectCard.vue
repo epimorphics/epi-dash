@@ -53,8 +53,7 @@ export default {
       displayedRepos: [],
       trellometrics: {},
       repometrics: {},
-      chartData: {},
-      colors: ['#1D0CCC', '#4597FF', '#FFC685', '#CC6523', '#AAF235']
+      chartData: {}
     }
   },
   watch: {
