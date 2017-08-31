@@ -65,7 +65,7 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json/repos')
+    request('http://192.168.1.137:4000/json/repos')
       .then((response) => {
         const projects = response.body.projects
         return projects.map(project => {

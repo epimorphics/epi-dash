@@ -9,7 +9,7 @@ export default class CustomProject {
   getTrello () {
     let trelloPromises = this.source.trello.reduce((all, board) => {
       Object.keys(board).map((key) =>
-        all.push(request(`http://localhost:4000/json/trello/${key}`)
+        all.push(request(`http://192.168.1.137:4000/json/trello/${key}`)
           .then((response) => {
             return response.body.metrics
           }))
@@ -30,7 +30,7 @@ export default class CustomProject {
 
   getRepos () {
     let gitPromises = this.source.git.reduce((all, repo) => {
-      all.push(request(`http://localhost:4000/json/git/${repo.name}`)
+      all.push(request(`http://192.168.1.137:4000/json/git/${repo.name}`)
           .then((response) => {
             return response.body.metrics
           })
@@ -38,7 +38,7 @@ export default class CustomProject {
       return all
     }, [])
     let cbPromises = this.source.cb.reduce((all, repo) => {
-      all.push(request(`http://localhost:4000/json/cb/${repo.name}`)
+      all.push(request(`http://192.168.1.137:4000/json/cb/${repo.name}`)
           .then((response) => {
             return response.body.metrics
           })

@@ -10,7 +10,7 @@ export default Line.extend({
   },
   props: ['name'],
   mounted () {
-    request(`http://localhost:4000/json/timeseries/${this.name}`)
+    request(`http://192.168.1.137:4000/json/timeseries/${this.name}`)
       .then((response) => {
         let series = response.body
         this.datasets = Object.keys(series).map((key) => {

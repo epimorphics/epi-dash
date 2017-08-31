@@ -44,7 +44,7 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json/trello')
+    request('http://192.168.1.137:4000/json/trello')
       .then((response) => {
         console.log(response)
         this.boards = response.body

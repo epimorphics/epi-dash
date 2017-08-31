@@ -39,7 +39,7 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json/projects')
+    request('http://192.168.1.137:4000/json/projects')
       .then((response) => {
         this.displayed = response.body.map((project) => {
           const newproject = {name: project.name, source: project.source, metrics: {}, url: project.url, displayName: project.name}

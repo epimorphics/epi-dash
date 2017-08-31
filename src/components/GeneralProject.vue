@@ -119,7 +119,7 @@ export default {
       this.settingView = !this.settingView
     },
     deleteProject () {
-      request.post(`http://localhost:4000/delete/project/`)
+      request.post(`http://192.168.1.137:4000/delete/project/`)
       .set('Content-Type', 'application/json')
       .send({name: this.project.name})
       .end()
@@ -127,7 +127,7 @@ export default {
     },
     saveData () {
       window.location.href = `#/project?name=${encodeURI(this.project.name)}`
-      request.post('http://localhost:4000/test')
+      request.post('http://192.168.1.137:4000/test')
       .set('Content-Type', 'application/json')
       .send({name: this.project.name, repos: this.displayedRepos, trello: this.displayedTrello, transform: this.project.transform})
       .end()
@@ -180,11 +180,11 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json/trello')
+    request('http://192.168.1.137:4000/json/trello')
       .then((response) => {
         this.trello = response.body.sort((a, b) => a.displayName.localeCompare(b.displayName))
       })
-    request('http://localhost:4000/json/repos')
+    request('http://192.168.1.137:4000/json/repos')
       .then((response) => {
         this.repos = response.body.projects.sort((a, b) => a.displayName.localeCompare(b.displayName))
       })
