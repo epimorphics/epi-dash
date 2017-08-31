@@ -26,6 +26,8 @@ export default {
 <style>
 .container {
   display: flex;
+  width: 80%;
+  margin: 0 auto;
   flex-direction: column;
   justify-content: center;
 }

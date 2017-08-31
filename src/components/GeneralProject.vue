@@ -32,6 +32,7 @@
       <br></br>
       <div id="sources">
         <div>
+          <button v-on:click="nofilter">FILTER</button>
           <textarea class="filter" v-model:value="project.transform"></textarea>
         </div>
         <div>
@@ -161,8 +162,9 @@ export default {
         })
     },
     setChart () {
-      let names = this.display.repo.map((repo) => repo.name)
-      names = Array.concat(names, this.display.trello.map((trello) => trello.name))
+      const repoNames = this.display.repo.map((repo) => repo.name)
+      const trelloNames = this.display.trello.map((trello) => trello.name)
+      const names = Array.concat(repoNames, trelloNames)
       getChartdata(names, this.project.transform)
         .then((data) => {
           this.chartData = data
