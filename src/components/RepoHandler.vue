@@ -15,19 +15,19 @@
       <button v-on:click="sort('Issues')">Issues</button>
     </div>
     <div class="project" v-for="project in displayed">
-      <projectcard v-bind:project="project"></projectcard>
+      <sourcecard v-bind:project="project"></sourcecard>
     </div>
   </div>
 </template>
 
 <script>
-import projectcard from './ProjectCard'
+import SourceCard from './Cards/SourceCard'
 import request from 'superagent'
 
 export default {
   name: 'projectHandler',
   components: {
-    'projectcard': projectcard
+    'sourcecard': SourceCard
   },
   props: ['allProjects'],
   data () {
@@ -65,7 +65,7 @@ export default {
     }
   },
   mounted () {
-    request('http://192.168.1.137:4000/json/repos')
+    request('http://localhost:4000/json/repos')
       .then((response) => {
         const projects = response.body.projects
         return projects.map(project => {

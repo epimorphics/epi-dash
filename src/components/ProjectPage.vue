@@ -1,181 +1,295 @@
 <template>
   <div>
-    <div class="section">
-      <div>
-        <div class="header">{{ project.displayName}}</div>
-      </div>
-      <div v-if="project.test !== 'notests'" v-bind:class="project.test" class="test sectionContent">
-        {{ project.test }}
-      </div>
+    <br></br>
+    <div class="titleBar">
+      <span class="title">{{ project.name }}</span>
+      <button class="settings" v-on:click="settings">Settings</button>
+      <button class="settings" v-on:click="saveData">Save</button>
     </div>
+
+    <br></br>
     <div class="graph">
-    <linetest v-bind:chartData="{labels: this.labels[0],
-          datasets: this.datasets
-    }"></linetest>
+    <graphreact v-bind:chartData="chartData"></graphreact>
     </div>
-    <div class="section">
-      <div class="header">
-        Metrics
+
+    <div id="allSources" v-if="!settingView">
+      <contributorcard v-bind:contributors="project.contributors"></contributorcard>
+      <metriccard v-bind:repometrics="repometrics" v-bind:trellometrics="trellometrics"></metriccard>
+      <div v-for="repo in display.repo">
+        <sourcecard v-bind:project="repo" v-bind:small="true">{{repo}}</sourcecard>
       </div>
-      <div class="sectionContent">
-        <ul v-for="key in Object.keys(project.metrics)">
-          <li>{{ project.metrics[key] }} {{ key }}</li>
-        </ul>
+      <div v-for="trello in display.trello">
+        <sourcecard v-bind:project="trello" v-bind:small="true"></sourcecard>
       </div>
     </div>
-    <contributorcard v-bind:contributors="project.avatars"></contributorcard>
-    <div class="section">
-      <div class="header">
-        Description
+
+    <div id="settings" v-else>
+      <br></br>
+      <div class="properties">
+        Project Name <input type="text" v-model="project.name"></input>
       </div>
-      <div class="sectionContent" v-if="project.description != null">{{ project.description }} </div>
+      <div class="properties">
+        Webhook <input type="text" v-model="project.webhook"></input>
+      </div>
+      <div class="properties">
+        <button v-on:click="deleteProject">Delete</button>
+      </div>
+      <br></br>
+      <div id="sources">
+        <div>
+          <button v-on:click="nofilter">FILTER</button>
+          <textarea class="filter" v-model:value="project.transform"></textarea>
+        </div>
+        <div>
+          ADD REPOS
+          <div id="repos">
+            <div v-for="repo in repos">
+              <input type="checkbox" v-bind:id="repo.name" v-bind:value="{url: repo.url, transform: {}}" v-model="displayedRepos">{{ repo.displayName }}</input>
+            </div>
+          </div>
+        </div>
+        <div>
+          ADD BOARDS
+          <div id="trello">
+            <div v-for="trello in trello">
+              <input type="checkbox" v-bind:id="trello.name" v-bind:value="{url: trello.url, transform: {} }" v-model="displayedTrello">{{ trello.displayName }}</input>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import request from 'superagent'
-import ContributorCard from './ContributorCard'
-import linetest from './LineReact'
-import moment from 'moment'
+import ContributorCard from './Cards/ContributorCard'
+import MetricCard from './Cards/MetricCard'
+import SourceCard from './Cards/SourceCard'
+import GraphReact from './LineReact'
+import {getProject, getChartdata, mergeMetrics, getElems, applyTransform} from '../models/Project'
+
 export default {
+  name: 'general',
+  components: {
+    'sourcecard': SourceCard,
+    'contributorcard': ContributorCard,
+    'metriccard': MetricCard,
+    'graphreact': GraphReact
+  },
   data () {
     return {
-      project: { metrics: {} },
-      datasets: [],
-      labels: [],
-      colors: ['#1D0CCC', '#4597FF', '#FFC685', '#CC6523']
+      project: { name: 'New Project', transform: '{}', webhook: '', repos: [], trello: [] },
+      settingView: true,
+      display: {
+        trello: [],
+        repo: []
+      },
+      trello: [],
+      repos: [],
+      temptransform: '{ }',
+      displayedTrello: [],
+      displayedRepos: [],
+      trellometrics: {},
+      repometrics: {},
+      chartData: {labels: [], dataset: []}
     }
   },
-  components: {
-    'contributorcard': ContributorCard,
-    'linetest': linetest
+  computed: {
+    transform () {
+      return this.project.transform
+    }
   },
-  name: 'projectPage',
-  mounted () {
-    request(`http://192.168.1.137:4000/json/project/${this.$route.query.name}`)
-      .then((response) => {
-        this.project = response.body
-        if (this.project.description == null) {
-          this.project.description = ''
-        }
-        if (this.project.test == null) {
-          this.project.test = 'notests'
-        } else {
-          if (this.project.test) {
-            this.project.test = 'testpass'
-          } else {
-            this.project.test = 'testfail'
-          }
-        }
-      })
-    request(`http://192.168.1.137:4000/json/timeseries/${this.$route.query.name}`)
-      .then((response) => {
-        let series = response.body
-        this.datasets = Object.keys(series).map((key) => {
-          let background = this.colors[Object.keys(series).findIndex((obj) => obj === key) % this.colors.length]
-          return {
-            label: key,
-            pointBackgroundColor: background,
-            pointBorderColor: background,
-            lineColor: background,
-            backgroundColor: background,
-            borderWidth: 3,
-            borderColor: background,
-            fill: false,
-            data: series[key].reduce((acc, obj) =>
-            Array.concat(acc, Object.values(obj)), [])
-          }
+  watch: {
+    displayedTrello () {
+      this.updateTrello()
+        .then(() => {
+          this.setChart()
+          this.setMetrics()
         })
-        this.labels = Object.values(series).map(obj =>
-          obj.reduce((all, data) => Array.concat(all, Object.keys(data).map((time) => moment(time, 'YYYY-MM-DDTHH:mm:ss+00:00').format('YYYY-MM-DD'))), []))
+    },
+    displayedRepos () {
+      this.updateRepos()
+        .then(() => {
+          this.setChart()
+          this.setMetrics()
+        })
+    },
+    transform () {
+      this.setMetrics()
+      this.setChart()
+    }
+  },
+  methods: {
+    settings () {
+      this.settingView = !this.settingView
+    },
+    deleteProject () {
+      request.post(`http://localhost:4000/delete/project/`)
+      .set('Content-Type', 'application/json')
+      .send({name: this.project.name})
+      .end()
+      window.location.href = '#/'
+    },
+    saveData () {
+      window.location.href = `#/project?name=${encodeURI(this.project.name)}`
+      request.post('http://localhost:4000/test')
+      .set('Content-Type', 'application/json')
+      .send({name: this.project.name, repos: this.displayedRepos, webhook: this.project.webhook, trello: this.displayedTrello, transform: this.project.transform})
+      .end()
+    },
+    nofilter () {
+      const temp = this.project.transform
+      this.project.transform = this.temptransform
+      this.temptransform = temp
+    },
+    updateTrello () {
+      return Promise.all(getElems(this.displayedTrello))
+        .then((responses) => {
+          this.display.trello = responses
+        })
+    },
+    updateRepos () {
+      return Promise.all(getElems(this.displayedRepos))
+        .then((responses) => {
+          this.project.contributors = responses
+            .reduce((all, project) => {
+              if (project.avatars != null) {
+                project.avatars.map((avatar) => {
+                  if (all.findIndex((contributor) => contributor === avatar) === -1) {
+                    all.push(avatar)
+                  }
+                })
+              }
+              return all
+            }, [])
+          this.display.repo = responses
+        })
+    },
+    setChart () {
+      const repoNames = this.display.repo.map((repo) => repo.name)
+      const trelloNames = this.display.trello.map((trello) => trello.name)
+      const names = Array.concat(repoNames, trelloNames)
+      getChartdata(names, this.project.transform)
+        .then((data) => {
+          this.chartData = data
+        })
+    },
+    setSources () {
+      this.updateTrello()
+      this.updateRepos()
+      this.setChart()
+      this.setMetrics()
+    },
+    setMetrics () {
+      this.trellometrics = applyTransform(mergeMetrics(this.display.trello), JSON.parse(this.project.transform))
+      this.repometrics = applyTransform(mergeMetrics(this.display.repo), JSON.parse(this.project.transform))
+    }
+  },
+  mounted () {
+    request('http://localhost:4000/json/trello')
+      .then((response) => {
+        this.trello = response.body.sort((a, b) => a.displayName.localeCompare(b.displayName))
       })
+    request('http://localhost:4000/json/repos')
+      .then((response) => {
+        this.repos = response.body.projects.sort((a, b) => a.displayName.localeCompare(b.displayName))
+      })
+    if (this.$route.query.name) {
+      this.settingView = false
+      getProject(this.$route.query.name)
+        .then((project) => {
+          this.project = project
+          this.displayedRepos = project.repos
+          this.displayedTrello = project.trello
+          this.setSources()
+        })
+    }
   }
 }
 </script>
 
-<style scoped>
+<style>
+.title {
+  width: 700px;
+  font-size: 40px;
+}
 
-  .header {
-    height: 50px;
-    background-color: #dddddd;
-    font-size: 40px;
-    padding-left: 10px;
-  }
+.sources {
+  display: inline;
+  height-height: 400px;
+}
 
-  .body {
-    display: flex;
-    height: 130px;
-  }
+#sources {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-wrap: wrap;
+}
 
-  .bodyleft {
-    width: 45%;
-    padding: 10px;
-    background-color: #aaaaaa;
-  }
+.avatar {
+  width: 50px;
+  float: right;
+}
 
-  .bodyright {
-    width: 55%;
-    padding: 10px;
-    background-color: #888888;
-  }
+.titleBar {
+  height: 50px;
+  width: 70%;
+  display: flex;
+  margin: 0 auto;
+  background-color: #dddddd;
+}
 
-  .bottom {
-    height: 20px;
-    width: 100%;
-  }
+.settings {
+  flex-align: right;
+  float: right;
+  height: 50px;
+}
 
-  .notests {
-    background-color: #444455;
-  }
+#allSources {
+  width: 70%;
+  display: flex;
+  margin: 0 auto;
+  flex-direction: column;
+}
 
-  .testpass {
-    background-color: #449944;
-  }
+#allSources > div{
+  padding: 10px;
+}
 
-  .testfail {
-    background-color: #994444;
-  }
+.metrics {
+  display: flex;
+  flex: auto;
+  padding-left: 10px;
+}
 
-  .avatar {
-    width: 50px;
-    margin: 20px;
-  }
+.filter {
+ height: 500px;
+ min-width: 400px;
+}
 
-  .cb {
-    content:url("https://pbs.twimg.com/profile_images/378800000410745178/8704302b5009e71d66fbc8f52cefc0bc_400x400.png");
-  }
+.graph {
+  width: 30%;
+  margin: auto;
+}
 
-  .git {
-    content:url("https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png");
-  }
+#repos {
+  width: 300px;
+  height: 500px;
+  overflow: scroll;
+  text-overflow: ellipsis;
+}
 
-  .source {
-    width: 50px;
-    height: 50px;
-    float: right;
-  }
+#trello {
+  width: 300px;
+  height: 500px;
+  overflow: scroll;
+  text-overflow: ellipsis;
+}
 
-  .contributors {
-    height: 50px;
-    background-color: #dddddd;
-  }
-
-  .section {
-    background-color: #AAAAAA;
-    margin: 20px;
-  }
-
-  .sectionContent {
-    padding: 10px;
-  }
-
-  .test {
-    height: 20px;
-  }
-
-  .graph {
-    width: 50%;
-    margin: auto;
-  }
+.properties {
+  display: flex;
+  margin: 10px;
+ justify-content: center;
+}
 </style>

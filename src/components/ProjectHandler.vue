@@ -1,17 +1,15 @@
 <template>
   <div class="projectHolder">
-    <div class="container">
-      <div class="hello" v-for="project in projects">
-          <!-- <projectcard  v-bind:project="project"></projectcard> -->
-        <projectcard class="card" v-bind:graph="true" v-bind:name="project.name"></projectcard>
-      </div>
+    <div class="hello" v-for="project in projects">
+      <projectcard class="card" v-bind:graph="true" v-bind:name="project.name"></projectcard>
     </div>
   </div>
 </template>
 
 <script>
-import projectcard from './GeneralProjectCard'
+import projectcard from './Cards/ProjectCard'
 import request from 'superagent'
+import { mergeMetrics } from '../models/Project'
 
 export default {
   name: 'projectHandler',
@@ -21,16 +19,7 @@ export default {
   props: ['allProjects'],
   data () {
     return {
-      displayed: [],
-      projects: [],
-      trello: [],
-      repo: [],
-      users: [],
-      metricText: {
-        bugs: 'Active Bugs',
-        critical: 'Critical Issues',
-        issues: 'Issues'
-      }
+      projects: []
     }
   },
   methods: {
@@ -39,9 +28,9 @@ export default {
     }
   },
   mounted () {
-    request('http://192.168.1.137:4000/json/projects')
+    request('http://localhost:4000/json/projects')
       .then((response) => {
-        this.displayed = response.body.map((project) => {
+        response.body.map((project) => {
           const newproject = {name: project.name, source: project.source, metrics: {}, url: project.url, displayName: project.name}
           const repoPromises = []
           project.repos.map((repo) => {
@@ -52,16 +41,7 @@ export default {
           })
           Promise.all(repoPromises)
             .then((allrepos) => {
-              allrepos.map((repo) => {
-                console.log(repo)
-                Object.keys(repo.metrics).map((key) => {
-                  if (newproject.metrics.hasOwnProperty(key)) {
-                    newproject.metrics[key] += repo.metrics[key]
-                  } else {
-                    newproject.metrics[key] = repo.metrics[key]
-                  }
-                })
-              })
+              newproject.metrics = mergeMetrics(allrepos)
               this.projects.push(newproject)
             })
         })
@@ -76,16 +56,16 @@ export default {
   text-align: center;
 }
 
-.container {
+.projectHolder {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  align-items: center;
+  justify-content: center;
 }
 
 .card {
-  width: 600px;
-  height: 400px;
+  width: 400px;
+  height: 500px;
   margin: 20px;
 }
 

@@ -1,62 +1,37 @@
 <template>
   <div>
     <div class="header" v-on:click="openRepo">
-      <img class="source" v-bind:class="project.source"></img>
-      <div class="projectName">{{ project.name }}</div>
-      <div v-if="filtered" v-on:click="emitUnfilter">X</div>
-      <div v-if="!small" class="avatarbox">
-        <img class="avatar" v-for="login in project.avatars" v-bind:title="login" v-bind:src="getAvatar(login)"></img>
-      </div>
+      <div class="projectName">Metrics</div>
     </div>
     <div v-if="!open" class="body">
       <div class="bodyleft">
-        {{ project.description }}
+        <metricholder v-bind:metrics="repometrics"></metricholder>
       </div>
       <div class="bodyright">
-        <ul v-for="key in Object.keys(project.metrics)">
-          <li>{{key}} {{ project.metrics[key] }}</li>
-        </ul>
+        <metricholder v-bind:metrics="trellometrics"></metricholder>
       </div>
-    </div>
-    <div class="bottom" v-if="!small" v-bind:class="project.test">
     </div>
   </div>
 </template>
 
 <script>
+import MetricHolder from '../CardComponents/MetricHolder'
 export default {
   name: 'project',
+  components: {
+    'metricholder': MetricHolder
+  },
   data () {
     return {
-      closable: this.small,
+      closable: true,
       open: this.small
     }
   },
-  props: ['project', 'small', 'filtered', 'users'],
+  props: ['trellometrics', 'repometrics', 'small'],
   methods: {
     openRepo () {
       if (this.closable) {
         this.open = !this.open
-      }
-    },
-    emitUnfilter () {
-      this.$emit('unfilter', this.project.shortLink)
-    },
-    getAvatar (login) {
-      const user = this.users.find((user) => {
-        if (user.login === login) {
-          return true
-        }
-        return false
-      })
-      if (user) {
-        if (user.hasOwnProperty('avatar_url')) {
-          return user.avatar_url
-        } else {
-          return ''
-        }
-      } else {
-        return ''
       }
     }
   }

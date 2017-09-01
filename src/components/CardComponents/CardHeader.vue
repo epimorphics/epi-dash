@@ -53,7 +53,7 @@
   }
 
   .epi {
-    content:url("http://192.168.1.137:8080/static/epi-icon.png");
+    content:url("http://localhost:8080/static/epi-icon.png");
   }
 
   .source {

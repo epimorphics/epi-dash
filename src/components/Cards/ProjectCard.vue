@@ -4,36 +4,28 @@
     <cardheader
       v-bind:source="source"
       v-bind:title="name"
-      v-bind:contributors="project.contributors"
       v-bind:href="`#/project?name=${encodeURI(name)}`"
+      v-bind:contributors="project.contributors"
     >
     </cardheader>
-
     <br></br>
     <div class="graph">
     <graphreact v-if="graph" v-bind:chartData="chartData"></graphreact>
     </div>
-
     <metriccard v-if="metrics" v-bind:repometrics="repometrics" v-bind:trellometrics="trellometrics"></metriccard>
   </div>
 </template>
 
 <script>
 import request from 'superagent'
-import CardHeader from './CardHeader'
-import ContributorCard from './ContributorCard'
-import MetricCard from './MetricCard'
-import ProjectCard from './ProjectCard'
-import GraphReact from './LineReact'
-import {getProject, getChartdata, mergeMetrics, getElems, applyTransform} from '../models/Project'
+import CardHeader from '../CardComponents/CardHeader'
+import GraphReact from '../LineReact'
+import {getProject, getChartdata, mergeMetrics, getElems, applyTransform} from '../../models/Project'
 
 export default {
   name: 'general',
   components: {
-    'projectcard': ProjectCard,
     'cardheader': CardHeader,
-    'contributorcard': ContributorCard,
-    'metriccard': MetricCard,
     'graphreact': GraphReact
   },
   props: ['name', 'graph', 'metrics'],
@@ -81,13 +73,13 @@ export default {
       this.settingView = !this.settingView
     },
     deleteProject () {
-      request.post(`http://192.168.1.137:4000/delete/project/`)
+      request.post(`http://localhost:4000/delete/project/`)
       .set('Content-Type', 'application/json')
       .send({name: this.project.name})
       .end()
     },
     saveData () {
-      request.post('http://192.168.1.137:4000/test')
+      request.post('http://localhost:4000/test')
       .set('Content-Type', 'application/json')
       .send({name: this.project.name, repos: this.displayedRepos, trello: this.displayedTrello, transform: this.project.transform})
       .end()
@@ -140,11 +132,11 @@ export default {
     }
   },
   mounted () {
-    request('http://192.168.1.137:4000/json/trello')
+    request('http://localhost:4000/json/trello')
       .then((response) => {
         this.trello = response.body
       })
-    request('http://192.168.1.137:4000/json/repos')
+    request('http://localhost:4000/json/repos')
       .then((response) => {
         this.repos = response.body.projects
       })
@@ -209,8 +201,7 @@ export default {
 }
 
 .graph {
-  width: 50%;
-  margin: auto;
+  padding: 10px;
 }
 
 a {

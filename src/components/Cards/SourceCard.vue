@@ -20,9 +20,9 @@
 </template>
 
 <script>
-import CardHeader from './CardHeader'
-import MetricHolder from './MetricHolder'
-import DescriptionHolder from './DescriptionHolder'
+import CardHeader from '../CardComponents/CardHeader'
+import MetricHolder from '../CardComponents/MetricHolder'
+import DescriptionHolder from '../CardComponents/DescriptionHolder'
 
 export default {
   name: 'project',
