@@ -28,6 +28,7 @@
       <div id="projectName">
         Project Name <input type="text" v-model="project.name"></input>
         <button v-on:click="deleteProject">Delete</button>
+        Webhook <input type="text" v-model="project.webhook"></input>
       </div>
       <br></br>
       <div id="sources">
@@ -74,7 +75,7 @@ export default {
   },
   data () {
     return {
-      project: { name: 'New Project', transform: '{}', repos: [], trello: [] },
+      project: { name: 'New Project', transform: '{}', webhook: '', repos: [], trello: [] },
       settingView: true,
       display: {
         trello: [],
@@ -130,7 +131,7 @@ export default {
       window.location.href = `#/project?name=${encodeURI(this.project.name)}`
       request.post('http://192.168.1.137:4000/test')
       .set('Content-Type', 'application/json')
-      .send({name: this.project.name, repos: this.displayedRepos, trello: this.displayedTrello, transform: this.project.transform})
+      .send({name: this.project.name, repos: this.displayedRepos, webhook: this.project.webhook, trello: this.displayedTrello, transform: this.project.transform})
       .end()
     },
     nofilter () {
