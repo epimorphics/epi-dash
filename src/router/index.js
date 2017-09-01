@@ -2,9 +2,9 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import RepoHandler from '@/components/RepoHandler'
 import ProjectHandler from '@/components/ProjectHandler'
-import ProjectPage from '@/components/ProjectPage'
+import SourcePage from '@/components/SourcePage'
 import TrelloHandler from '@/components/TrelloHandler'
-import GeneralProject from '@/components/GeneralProject'
+import ProjectPage from '@/components/ProjectPage'
 
 Vue.use(Router)
 
@@ -23,7 +23,7 @@ export default new Router({
     {
       path: '/repo',
       name: 'Repo',
-      component: ProjectPage
+      component: SourcePage
     },
     {
       path: '/trello',
@@ -33,12 +33,12 @@ export default new Router({
     {
       path: '/new/project',
       name: 'New Project',
-      component: GeneralProject
+      component: ProjectPage
     },
     {
       path: '/project',
       name: 'New Project',
-      component: GeneralProject
+      component: ProjectPage
     }
   ]
 })

@@ -26,7 +26,7 @@ export default {
 <style>
 .container {
   display: flex;
-  width: 80%;
+  width: 60%;
   margin: 0 auto;
   flex-direction: column;
   justify-content: center;
@@ -51,8 +51,8 @@ export default {
 
 
 .links {
-  width: 80%;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0 auto 20px auto;
   background-color: #dddddd;
   display: flex;
   justify-content: center;
