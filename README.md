@@ -2,6 +2,18 @@
 
 > A Vue.js project
 
+## Docker
+
+To run with docker use
+
+``` bash
+# build docker image
+  docker build -t epi-dash .
+
+# run with localhost networking
+  docker run --net="host" -d epidash
+```
+
 ## Build Setup
 
 ``` bash
