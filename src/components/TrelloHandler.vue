@@ -27,7 +27,7 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json/trello')
+    request(`${process.env.BACKEND}/json/trello`)
       .then((response) => {
         this.boards = response.body
       })

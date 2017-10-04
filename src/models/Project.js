@@ -5,7 +5,7 @@ import moment from 'moment'
 const colors = ['#1D0CCC', '#4597FF', '#FFC685', '#CC6523', '#AAF235']
 
 export function getProject (name) {
-  return request(`http://localhost:4000/json/projects/${name}`)
+  return request(`${process.env.BACKEND}/json/projects/${name}`)
     .then((response) => {
       return response.body
     })
@@ -58,7 +58,7 @@ export function applyTransform (object, transform) {
 }
 
 export function getChartdata (names, transform) {
-  const seriesPromise = names.map((name) => request(`http://localhost:4000/json/timeseries/${name}`))
+  const seriesPromise = names.map((name) => request(`${process.env.BACKEND}/json/timeseries/${name}`))
   return Promise.all(seriesPromise)
     .then((out) => {
       let reduction = out.map(resp =>

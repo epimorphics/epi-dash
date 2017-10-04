@@ -55,7 +55,7 @@ export default {
   },
   name: 'projectPage',
   mounted () {
-    request(`http://localhost:4000/json/project/${this.$route.query.name}`)
+    request(`${process.env.BACKEND}/json/project/${this.$route.query.name}`)
       .then((response) => {
         this.project = response.body
         if (this.project.description == null) {
@@ -71,7 +71,7 @@ export default {
           }
         }
       })
-    request(`http://localhost:4000/json/timeseries/${this.$route.query.name}`)
+    request(`${process.env.BACKEND}/json/timeseries/${this.$route.query.name}`)
       .then((response) => {
         let series = response.body
         this.datasets = Object.keys(series).map((key) => {

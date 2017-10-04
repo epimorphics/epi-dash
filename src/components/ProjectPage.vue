@@ -44,7 +44,7 @@
           ADD REPOS
           <div id="repos">
             <div v-for="repo in repos">
-              <input type="checkbox" v-bind:id="repo.name" v-bind:value="{url: repo.url, transform: {}}" v-model="displayedRepos">{{ repo.displayName }}</input>
+              <input type="checkbox" v-bind:id="repo.name" v-bind:value="{name: repo.name, url: repo.url, transform: {}}" v-model="displayedRepos">{{ repo.displayName }}</input>
             </div>
           </div>
         </div>
@@ -52,7 +52,7 @@
           ADD BOARDS
           <div id="trello">
             <div v-for="trello in trello">
-              <input type="checkbox" v-bind:id="trello.name" v-bind:value="{url: trello.url, transform: {} }" v-model="displayedTrello">{{ trello.displayName }}</input>
+              <input type="checkbox" v-bind:id="trello.name" v-bind:value="{name: trello.name, url: trello.url, transform: {} }" v-model="displayedTrello">{{ trello.displayName }}</input>
             </div>
           </div>
         </div>
@@ -125,7 +125,7 @@ export default {
       this.settingView = !this.settingView
     },
     deleteProject () {
-      request.post(`http://localhost:4000/delete/project/`)
+      request.post(`${process.env.BACKEND}/delete/project/`)
       .set('Content-Type', 'application/json')
       .send({name: this.project.name})
       .end()
@@ -133,7 +133,7 @@ export default {
     },
     saveData () {
       window.location.href = `#/project?name=${encodeURI(this.project.name)}`
-      request.post('http://localhost:4000/test')
+      request.post(`${process.env.BACKEND}/test`)
       .set('Content-Type', 'application/json')
       .send({name: this.project.name, repos: this.displayedRepos, webhook: this.project.webhook, trello: this.displayedTrello, transform: this.project.transform})
       .end()
@@ -187,11 +187,11 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json/trello')
+    request(`${process.env.BACKEND}/json/trello`)
       .then((response) => {
         this.trello = response.body.sort((a, b) => a.displayName.localeCompare(b.displayName))
       })
-    request('http://localhost:4000/json/repos')
+    request(`${process.env.BACKEND}/json/repos`)
       .then((response) => {
         this.repos = response.body.projects.sort((a, b) => a.displayName.localeCompare(b.displayName))
       })

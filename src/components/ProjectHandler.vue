@@ -28,7 +28,7 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json/projects')
+    request(`${process.env.BACKEND}/json/projects`)
       .then((response) => {
         response.body.map((project) => {
           const newproject = {name: project.name, source: project.source, metrics: {}, url: project.url, displayName: project.name}

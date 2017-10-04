@@ -73,13 +73,13 @@ export default {
       this.settingView = !this.settingView
     },
     deleteProject () {
-      request.post(`http://localhost:4000/delete/project/`)
+      request.post(`${process.env.BACKEND}/delete/project/`)
       .set('Content-Type', 'application/json')
       .send({name: this.project.name})
       .end()
     },
     saveData () {
-      request.post('http://localhost:4000/test')
+      request.post(`${process.env.BACKEND}/test`)
       .set('Content-Type', 'application/json')
       .send({name: this.project.name, repos: this.displayedRepos, trello: this.displayedTrello, transform: this.project.transform})
       .end()
@@ -132,11 +132,11 @@ export default {
     }
   },
   mounted () {
-    request('http://localhost:4000/json/trello')
+    request(`${process.env.BACKEND}/json/trello`)
       .then((response) => {
         this.trello = response.body
       })
-    request('http://localhost:4000/json/repos')
+    request(`${process.env.BACKEND}/json/repos`)
       .then((response) => {
         this.repos = response.body.projects
       })
