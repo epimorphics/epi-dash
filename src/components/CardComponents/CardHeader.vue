@@ -25,6 +25,8 @@
     background-color: #dddddd;
     display: flex;
     flex-direction: row;
+    max-height: 50px;
+    overflow: hidden;
   }
 
   .projectName {
@@ -63,6 +65,8 @@
   }
 
   .avatarBox {
+    overflow: hidden;
+    flex-direction: row-reverse;
     flex-grow: 1;
   }
 </style>

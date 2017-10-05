@@ -1,5 +1,7 @@
 <template>
   <div>
+    {{displayedRepos}}
+    {{displayedTrello}}
     <br></br>
     <div class="titleBar">
       <span class="title">{{ project.name }}</span>

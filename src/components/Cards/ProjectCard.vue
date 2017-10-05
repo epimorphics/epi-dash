@@ -6,8 +6,7 @@
       v-bind:title="name"
       v-bind:href="`#/project?name=${encodeURI(name)}`"
       v-bind:contributors="project.contributors"
-    >
-    </cardheader>
+    > </cardheader>
     <br></br>
     <div class="graph">
     <graphreact v-if="graph" v-bind:chartData="chartData"></graphreact>
@@ -201,7 +200,6 @@ export default {
 }
 
 .graph {
-  padding: 10px;
 }
 
 a {

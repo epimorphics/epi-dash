@@ -1,7 +1,9 @@
 <template>
-  <div class="projectHolder">
-    <div class="hello" v-for="project in projects">
-      <projectcard class="card" v-bind:graph="true" v-bind:name="project.name"></projectcard>
+  <div>
+    <div class="projectHolder">
+      <div class="hello" v-for="project in projects">
+        <projectcard class="card" v-bind:graph="true" v-bind:name="project.name"></projectcard>
+      </div>
     </div>
   </div>
 </template>
@@ -64,9 +66,9 @@ export default {
 }
 
 .card {
-  width: 400px;
+  width: 500px;
   height: 500px;
-  margin: 20px;
+  margin: 0px 40px 120px 40px;
 }
 
 </style>
