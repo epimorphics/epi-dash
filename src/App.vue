@@ -1,15 +1,16 @@
 <template>
   <div id="app">
-    <div id="logo">
-      <a href="/"><img src="./assets/epimorphics-logo.png"></a>
-    </div>
-    <br>
-    <div class="links">
-      <a href="/"><span class="link">Projects</span></a>
-      <a href="/#/repos"><span class="link">Repos</span></a>
-      <a href="/#/trello"><span class="link">Trello Boards</span></a>
-      <a href="/#/new/project"><span class="link" href="/#/new/project">New Project</span></a>
-     <br>
+    <div id="nav">
+      <div id="logo">
+        <a href="/"><img src="./assets/epimorphics-logo.png"></a>
+      </div>
+      <br>
+      <div class="links">
+        <a href="/"><span class="link">Projects</span></a>
+        <a href="/#/repos"><span class="link">Repos</span></a>
+        <a href="/#/trello"><span class="link">Trello Boards</span></a>
+        <a href="/#/new/project"><span class="link" href="/#/new/project">New Project</span></a>
+      </div>
     </div>
     <div class="container">
     <router-view></router-view>
@@ -26,7 +27,7 @@ export default {
 <style>
 .container {
   display: flex;
-  width: 60%;
+  width: 80%;
   margin: 0 auto;
   flex-direction: column;
   justify-content: center;
@@ -39,26 +40,24 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
+  display:flex;
+  margin: 0px;
+  min-height: 100%;
 }
 
 #logo {
-  text-align: center;
+  text-align: left;
 }
 
 #logo img {
   width: 350px;
 }
 
-
 .links {
-  width: 100%;
-  margin: 0 auto 20px auto;
   background-color: #dddddd;
   display: flex;
-  justify-content: center;
-}
-
-.link {
+  flex-direction: column;
+  height: 100%;
 }
 
 a {

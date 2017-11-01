@@ -1,7 +1,5 @@
 <template>
   <div>
-    {{displayedRepos}}
-    {{displayedTrello}}
     <br></br>
     <div class="titleBar">
       <span class="title">{{ project.name }}</span>
@@ -39,22 +37,24 @@
       <br></br>
       <div id="sources">
         <div>
-          <button v-on:click="nofilter">FILTER</button>
-          <textarea class="filter" v-model:value="project.transform"></textarea>
+          <editor id="editor" v-model="project.transform" v-bind:trello="display.trello" v-bind:repos="display.repo"></editor>
         </div>
-        <div>
-          ADD REPOS
-          <div id="repos">
+        <div id="repos">
+          <div>ADD REPOS</div>
+          <ticketselector v-model="displayedRepos"></ticketselector>
+          <div>
             <div v-for="repo in repos">
-              <input type="checkbox" v-bind:id="repo.name" v-bind:value="{name: repo.name, url: repo.url, transform: {}}" v-model="displayedRepos">{{ repo.displayName }}</input>
+              <input type="checkbox" v-bind:id="repo.name" v-bind:value="{name: repo.name, displayName: repo.displayName, url: repo.url, transform: {}}" v-model="displayedRepos">{{ repo.displayName }}</input>
             </div>
           </div>
         </div>
         <div>
           ADD BOARDS
+          <ticketselector v-model="displayedTrello"></ticketselector>
           <div id="trello">
+            <br>
             <div v-for="trello in trello">
-              <input type="checkbox" v-bind:id="trello.name" v-bind:value="{name: trello.name, url: trello.url, transform: {} }" v-model="displayedTrello">{{ trello.displayName }}</input>
+              <input type="checkbox" v-bind:id="trello.name" v-bind:value="{name: trello.name, displayName: trello.displayName, url: trello.url, transform: {} }" v-model="displayedTrello">{{ trello.displayName }}</input>
             </div>
           </div>
         </div>
@@ -69,6 +69,8 @@ import ContributorCard from './Cards/ContributorCard'
 import MetricCard from './Cards/MetricCard'
 import SourceCard from './Cards/SourceCard'
 import GraphReact from './LineReact'
+import Editor from './Editor'
+import TicketSelector from './TicketSelector'
 import {getProject, getChartdata, mergeMetrics, getElems, applyTransform} from '../models/Project'
 
 export default {
@@ -77,7 +79,9 @@ export default {
     'sourcecard': SourceCard,
     'contributorcard': ContributorCard,
     'metriccard': MetricCard,
-    'graphreact': GraphReact
+    'graphreact': GraphReact,
+    'ticketselector': TicketSelector,
+    'editor': Editor
   },
   data () {
     return {
@@ -89,7 +93,6 @@ export default {
       },
       trello: [],
       repos: [],
-      temptransform: '{ }',
       displayedTrello: [],
       displayedRepos: [],
       trellometrics: {},
@@ -139,11 +142,6 @@ export default {
       .set('Content-Type', 'application/json')
       .send({name: this.project.name, repos: this.displayedRepos, webhook: this.project.webhook, trello: this.displayedTrello, transform: this.project.transform})
       .end()
-    },
-    nofilter () {
-      const temp = this.project.transform
-      this.project.transform = this.temptransform
-      this.temptransform = temp
     },
     updateTrello () {
       return Promise.all(getElems(this.displayedTrello))
@@ -270,28 +268,45 @@ export default {
  min-width: 400px;
 }
 
+.filterButton {
+ height: 100px;
+ min-width: 100px;
+}
+
 .graph {
   width: 30%;
   margin: auto;
 }
 
-#repos {
+#editor {
   width: 300px;
   height: 500px;
-  overflow: scroll;
-  text-overflow: ellipsis;
+}
+
+#repos {
+  width: 300px;
 }
 
 #trello {
   width: 300px;
-  height: 500px;
-  overflow: scroll;
-  text-overflow: ellipsis;
 }
 
 .properties {
   display: flex;
   margin: 10px;
  justify-content: center;
+}
+
+.activeRepo {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.label {
+  background: #afeda1;
+  padding: 10px;
+  margin: 10px;
+  max-height: 20px;
+  overflow: none;
 }
 </style>
