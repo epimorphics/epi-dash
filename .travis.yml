@@ -1,0 +1,12 @@
+sudo: required
+services:
+  - docker
+language: general
+script:
+  - docker build -f Dockerfile.static -t quorauk/dashboardvue .
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+    docker tag quorauk/dashboardvue:latest quorauk/dashboardvue:$TRAVIS_BUILD_NUMBER;
+    docker push quorauk/dashboardvue:$TRAVIS_BUILD_NUMBER;
+    fi

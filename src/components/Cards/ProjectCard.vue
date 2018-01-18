@@ -200,6 +200,8 @@ export default {
 }
 
 .graph {
+  width: 300px;
+  height: 300px;
 }
 
 a {

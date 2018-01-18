@@ -1,0 +1,15 @@
+FROM node:9.4.0 as builder
+WORKDIR /app
+RUN chown node /app
+ADD package.json /app/package.json
+USER node
+RUN npm install
+ADD . /app
+RUN npm run lint
+RUN npm run build
+
+FROM nginx:1.13.8
+COPY --from=builder /app/dist /usr/share/nginx/html
+ADD epidash.template /etc/nginx/conf.d/epidash.template
+ENV NGINX_HOST=http://localhost:4000/
+CMD ["/bin/bash", "-c", "envsubst < /etc/nginx/conf.d/epidash.template > /etc/nginx/conf.d/epidash.conf && nginx -g 'daemon off;'"]
