@@ -5,8 +5,8 @@ import ProjectHandler from '@/components/ProjectHandler'
 import SourcePage from '@/components/SourcePage'
 import TrelloHandler from '@/components/TrelloHandler'
 import ProjectPage from '@/components/ProjectPage'
-import PingCard from '@/components/PingCard'
-import StreamingDash from '@/components/StreamingDash'
+// import PingCard from '@/components/PingCard'
+// import StreamingDash from '@/components/StreamingDash'
 
 Vue.use(Router)
 
@@ -41,8 +41,8 @@ export default new Router({
       path: '/project',
       name: 'New Project',
       component: ProjectPage
-    },
-    {
+    }
+/*    {
       path: '/stream',
       name: 'Stream',
       component: StreamingDash
@@ -51,6 +51,6 @@ export default new Router({
       path: '/ping',
       name: 'Ping',
       component: PingCard
-    }
+    } */
   ]
 })
