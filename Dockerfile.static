@@ -3,6 +3,7 @@ WORKDIR /app
 RUN chown node /app
 ADD package.json /app/package.json
 USER node
+RUN npm init
 RUN npm install
 ADD . /app
 RUN npm run lint
