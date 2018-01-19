@@ -6,10 +6,10 @@
       </div>
       <br>
       <div class="links">
-        <a href="/"><span class="link">Projects</span></a>
-        <a href="/#/repos"><span class="link">Repos</span></a>
-        <a href="/#/trello"><span class="link">Trello Boards</span></a>
-        <a href="/#/new/project"><span class="link" href="/#/new/project">New Project</span></a>
+        <a href=`${process.env.ROOT}/`><span class="link">Projects</span></a>
+        <a href=`${process.env.ROOT}/#/repos`><span class="link">Repos</span></a>
+        <a href=`${process.env.ROOT}/#/trello`><span class="link">Trello Boards</span></a>
+        <a href=`${process.env.ROOT}/#/new/project`><span class="link" href="/#/new/project">New Project</span></a>
       </div>
     </div>
     <div class="container">
