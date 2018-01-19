@@ -11,6 +11,7 @@ import ProjectPage from '@/components/ProjectPage'
 Vue.use(Router)
 
 export default new Router({
+  base: window.location.pathname,
   routes: [
     {
       path: '/',
