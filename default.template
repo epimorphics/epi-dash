@@ -10,7 +10,7 @@ server {
         index  index.html index.htm;
     }
 
-    location /json {
+    location /json/ {
       proxy_pass ${NGINX_HOST};
     }
 
