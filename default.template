@@ -14,6 +14,10 @@ server {
       proxy_pass ${NGINX_HOST};
     }
 
+    location /healthz {
+      return 200 "healthy\n";
+    }
+
     #error_page  404              /404.html;
 
     # redirect server error pages to the static page /50x.html
