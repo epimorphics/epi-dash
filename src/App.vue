@@ -9,7 +9,7 @@
         <a v-bind:href="backend() + '/'"><span class="link">Projects</span></a>
         <a v-bind:href="backend() + '/#/repos'"><span class="link">Repos</span></a>
         <a v-bind:href="backend() + '/#/trello'"><span class="link">Trello Boards</span></a>
-        <a v-bind:href="backend() + '/#/new/project'"><span class="link">{{ backend() }}New Project</span></a>
+        <a v-bind:href="backend() + '/#/new/project'"><span class="link">New Project</span></a>
       </div>
     </div>
     <div class="container">
