@@ -6,10 +6,10 @@
       </div>
       <br>
       <div class="links">
-        <a href="/"><span class="link">Projects</span></a>
-        <a href="/#/repos"><span class="link">Repos</span></a>
-        <a href="/#/trello"><span class="link">Trello Boards</span></a>
-        <a v-bind:href="'/#/new/project'"><span class="link">New Project</span></a>
+        <a v-bind:href="backend() + '/'"><span class="link">Projects</span></a>
+        <a v-bind:href="backend() + '/#/repos'"><span class="link">Repos</span></a>
+        <a v-bind:href="backend() + '/#/trello'"><span class="link">Trello Boards</span></a>
+        <a v-bind:href="backend() + '/#/new/project'"><span class="link">{{ backend() }}New Project</span></a>
       </div>
     </div>
     <div class="container">
@@ -20,7 +20,12 @@
 
 <script>
 export default {
-  name: 'app'
+  name: 'app',
+  methods: {
+    backend: () => {
+      return process.env.BACKEND
+    }
+  }
 }
 </script>
 

@@ -5,12 +5,12 @@ server {
     #charset koi8-r;
     #access_log  /var/log/nginx/host.access.log  main;
 
-    location / {
-        root   /usr/share/nginx/html;
+    location $(ADDRESS)/ {
+        alias /usr/share/nginx/html/;
         index  index.html index.htm;
     }
 
-    location /json/ {
+    location $(ADDRESS)/json/ {
       proxy_pass ${NGINX_HOST};
     }
 
